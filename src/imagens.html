@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estilo de Imagens - Dibie Sublimação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #f5f3ef; color: #1c1c1c;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; margin-bottom: 6px; }
+    .subtitle { color: #888; font-size: 17px; margin-bottom: 48px; }
+
+    .intro {
+      background: #fff; border-radius: 16px; padding: 36px;
+      margin-bottom: 50px; border: 1px solid #e8e4dc;
+    }
+    .intro h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 20px; margin-bottom: 12px; }
+    .intro p { max-width: 640px; line-height: 1.7; }
+
+    .option {
+      margin-bottom: 60px; background: #fff; border-radius: 16px;
+      border: 1px solid #e8e4dc; overflow: hidden;
+    }
+    .option-header {
+      padding: 20px 32px; border-bottom: 1px solid #e8e4dc;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .option-header h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 20px; }
+    .option-header .tag {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: #fff; background: #1c1c1c;
+      padding: 4px 12px; border-radius: 4px;
+    }
+
+    .option-content { padding: 32px; }
+
+    .mood-row {
+      display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .mood-img {
+      flex: 1; min-width: 160px; height: 180px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; position: relative; overflow: hidden;
+    }
+    .mood-img .ref-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,.5); color: #fff; font-size: 11px;
+      padding: 6px 10px; text-align: center; backdrop-filter: blur(4px);
+    }
+
+    .desc-box {
+      background: #f9f7f4; border-radius: 10px; padding: 20px;
+      margin-bottom: 16px;
+    }
+    .desc-box h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .desc-box p { font-size: 14px; color: #666; line-height: 1.6; }
+    .desc-box ul { list-style: none; padding: 0; margin-top: 8px; }
+    .desc-box li {
+      font-size: 13px; color: #777; padding: 3px 0 3px 16px;
+      position: relative;
+    }
+    .desc-box li::before { content: '✓'; position: absolute; left: 0; color: #7a3b4e; font-weight: 700; }
+
+    .quote-box {
+      background: #f5ece4; border-radius: 10px; padding: 20px;
+      border-left: 3px solid #7a3b4e;
+    }
+    .quote-box p { font-size: 14px; font-style: italic; color: #555; line-height: 1.6; }
+    .quote-box .author { font-size: 12px; font-weight: 700; margin-top: 6px; font-style: normal; color: #7a3b4e; }
+
+    .specs {
+      background: #f9f7f4; padding: 20px 32px;
+      border-top: 1px solid #e8e4dc;
+      font-size: 13px; color: #888; display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .specs strong { color: #444; font-weight: 600; }
+
+    .verdict {
+      text-align: center; padding: 40px; background: #f9f7f4;
+      border-radius: 16px; border: 2px dashed #d4cfc7;
+    }
+    .verdict h3 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+    .verdict p { color: #777; max-width: 500px; margin: 0 auto; }
+
+    @media (max-width: 640px) {
+      .option-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Estilo de Imagens</h1>
+  <p class="subtitle">Fotografia e identidade visual dos produtos</p>
+
+  <div class="intro">
+    <h2>O que buscamos</h2>
+    <p>Imagens que mostrem o <strong>produto real</strong> com <strong>personalidade</strong> — nada de mockups genéricos. A ideia é passar a sensação de que é feito à mão, com cuidado, e que o cliente consegue se ver usando aquilo.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="option">
+    <div class="option-header">
+      <h3>1 · Lifestyle Aconchegante</h3>
+      <span class="tag">Cenas da vida real</span>
+    </div>
+    <div class="option-content">
+      <div class="mood-row">
+        <div class="mood-img" style="background:#f5ece4;color:#7a3b4e;font-size:32px;">
+          ☕📖
+          <span class="ref-label">Caneca na mesa com livro</span>
+        </div>
+        <div class="mood-img" style="background:#f0e4d8;color:#7a3b4e;font-size:32px;">
+          👕🌿
+          <span class="ref-label">Camiseta em ambiente natural</span>
+        </div>
+        <div class="mood-img" style="background:#f5ece4;color:#7a3b4e;font-size:32px;">
+          🧢☀️
+          <span class="ref-label">Boné em cena ao ar livre</span>
+        </div>
+      </div>
+      <div class="desc-box">
+        <h4>Como funciona</h4>
+        <p>Produtos fotografados em situações reais de uso — a caneca na mesa do café, a camiseta numa pessoa, o boné num dia de sol. Fundo neutro mas com contexto.</p>
+        <ul>
+          <li>Luz natural, cores quentes</li>
+          <li>Pessoas reais (não modelos estilo "catálogo")</li>
+          <li>Fundo desfocado ou textura suave (madeira, linho)</li>
+          <li>Mostra o produto sendo usado</li>
+        </ul>
+      </div>
+      <div class="quote-box">
+        <p>"A foto não precisa ser perfeita — precisa ser verdadeira. O cliente precisa sentir que aquilo poderia estar na casa dele."</p>
+        <div class="author">— Direção criativa</div>
+      </div>
+    </div>
+    <div class="specs">
+      <span><strong>Estilo:</strong> Lifestyle, real, natural</span>
+      <span><strong>Luz:</strong> Natural difusa</span>
+      <span><strong>Coringa para:</strong> Instagram, site, catálogo</span>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="option">
+    <div class="option-header">
+      <h3>2 · Flat Lay Limpo</h3>
+      <span class="tag">Produto em superfície</span>
+    </div>
+    <div class="option-content">
+      <div class="mood-row">
+        <div class="mood-img" style="background:#f5f0ea;color:#7a3b4e;font-size:32px;">
+          ☕🍂
+          <span class="ref-label">Caneca vista de cima</span>
+        </div>
+        <div class="mood-img" style="background:#f0ece6;color:#7a3b4e;font-size:32px;">
+          👕🎨
+          <span class="ref-label">Camiseta estendida com arte</span>
+        </div>
+        <div class="mood-img" style="background:#f5f0ea;color:#7a3b4e;font-size:32px;">
+          🎁✨
+          <span class="ref-label">Brindes arranjados no chão</span>
+        </div>
+      </div>
+      <div class="desc-box">
+        <h4>Como funciona</h4>
+        <p>Produtos fotografados de cima, em superfície limpa (madeira, pedra, papel craft), com composição cuidada. Ótimo para mostrar coleções e detalhes da estampa.</p>
+        <ul>
+          <li>Enquadramento 90º (vista superior)</li>
+          <li>Superfície texturizada (madeira, linho, papel)</li>
+          <li>Composição com objetos complementares (flores, café)</li>
+          <li>Mostra o produto em detalhe</li>
+        </ul>
+      </div>
+      <div class="quote-box">
+        <p>"O flat lay é o retrato do produto. Sem distração, sem pressa — só o objeto e a qualidade dele."</p>
+        <div class="author">— Direção criativa</div>
+      </div>
+    </div>
+    <div class="specs">
+      <span><strong>Estilo:</strong> Flat lay, arrumado, editorial</span>
+      <span><strong>Luz:</strong> Natural zenital</span>
+      <span><strong>Coringa para:</strong> Vitrine do site, grid de produtos</span>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="option">
+    <div class="option-header">
+      <h3>3 · Produto em Detalhe</h3>
+      <span class="tag">Close na estampa</span>
+    </div>
+    <div class="option-content">
+      <div class="mood-row">
+        <div class="mood-img" style="background:#f0e8e0;color:#7a3b4e;font-size:32px;">
+          🔍☕
+          <span class="ref-label">Close na estampa da caneca</span>
+        </div>
+        <div class="mood-img" style="background:#ede4da;color:#7a3b4e;font-size:32px;">
+          🔍👕
+          <span class="ref-label">Close na textura do tecido</span>
+        </div>
+        <div class="mood-img" style="background:#f0e8e0;color:#7a3b4e;font-size:32px;">
+          🔍🧢
+          <span class="ref-label">Close no bordado/estampa</span>
+        </div>
+      </div>
+      <div class="desc-box">
+        <h4>Como funciona</h4>
+        <p>Macro fotografia focada no detalhe da estampa, textura do material e acabamento. Mostra a qualidade de perto — o cliente vê que não é adesivo, é sublimação de verdade.</p>
+        <ul>
+          <li>Close extremo (mostra a textura)</li>
+          <li>Foco na arte e no acabamento</li>
+          <li>Luz lateral para destacar relevo</li>
+          <li>Mostra a qualidade do serviço</li>
+        </ul>
+      </div>
+      <div class="quote-box">
+        <p>"É no detalhe que o cliente confia. Uma foto bem feita do acabamento vale mais que mil palavras."</p>
+        <div class="author">— Direção criativa</div>
+      </div>
+    </div>
+    <div class="specs">
+      <span><strong>Estilo:</strong> Macro, técnico, realista</span>
+      <span><strong>Luz:</strong> Lateral suave</span>
+      <span><strong>Coringa para:</strong> Prova social, página de qualidade</span>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="option">
+    <div class="option-header">
+      <h3>4 · Processo / Making Of</h3>
+      <span class="tag">Mostra o trabalho</span>
+    </div>
+    <div class="option-content">
+      <div class="mood-row">
+        <div class="mood-img" style="background:#ede4da;color:#7a3b4e;font-size:32px;">
+          🖨️👐
+          <span class="ref-label">Mãos na prensa</span>
+        </div>
+        <div class="mood-img" style="background:#f0e8e0;color:#7a3b4e;font-size:32px;">
+          🎨🖌️
+          <span class="ref-label">Arte sendo criada</span>
+        </div>
+        <div class="mood-img" style="background:#ede4da;color:#7a3b4e;font-size:32px;">
+          📦❤️
+          <span class="ref-label">Produto sendo embalado</span>
+        </div>
+      </div>
+      <div class="desc-box">
+        <h4>Como funciona</h4>
+        <p>Mostrar o processo de produção: a prensa aquecendo, a arte sendo posicionada, o produto saindo da máquina. Humaniza a marca e mostra que tem gente de verdade fazendo.</p>
+        <ul>
+          <li>Mãos trabalhando (close nas mãos)</li>
+          <li>Máquinas e materiais reais</li>
+          <li>Clima de ateliê, não de fábrica</li>
+          <li>Mostra o cuidado no processo</li>
+        </ul>
+      </div>
+      <div class="quote-box">
+        <p>"A pessoa não compra só o produto — compra a história de quem fez. Mostrar o processo é mostrar o valor do feito à mão."</p>
+        <div class="author">— Direção criativa</div>
+      </div>
+    </div>
+    <div class="specs">
+      <span><strong>Estilo:</strong> Documental, humano, real</span>
+      <span><strong>Luz:</strong> Disponivel do ambiente</span>
+      <span><strong>Coringa para:</strong> Instagram, stories, sobre nós</span>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h3>O combinado ideal</h3>
+    <p>Usar <strong>todos os 4 estilos</strong> em momentos diferentes:<br>
+    Lifestyle (1) para o hero e redes sociais · Flat lay (2) para vitrine de produtos · Detalhe (3) para provar a qualidade · Making of (4) para humanizar a marca.</p>
+  </div>
+
+</div>
+
+</body>
+</html>
