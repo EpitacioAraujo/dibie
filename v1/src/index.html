@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dibie Sublimação - Personalização de Produtos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/imask@7/dist/imask.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      color: #2a2a2e;
+      background: #faf6f0;
+    }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+    /* HEADER */
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      z-index: 1000;
+      transition: box-shadow .3s;
+    }
+    header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,.08); }
+    header .container {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+    }
+    .logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; color: #2a2a2e; }
+    .logo span { color: #7a3b4e; }
+    nav a {
+      margin-left: 28px; text-decoration: none; font-size: 15px; font-weight: 600;
+      color: #555; transition: color .2s;
+    }
+    nav a:hover { color: #7a3b4e; }
+    .btn-nav {
+      background: #7a3b4e; color: #fff !important; padding: 8px 20px;
+      border-radius: 6px;
+    }
+    .btn-nav:hover { background: #632e3e !important; }
+
+    /* HERO */
+    .hero {
+      padding: 160px 0 100px;
+      background: linear-gradient(135deg, #2a2a2e 0%, #3a3035 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: ''; position: absolute; bottom: -60px; left: -10%;
+      width: 120%; height: 120px;
+      background: #faf6f0;
+      border-radius: 50% 50% 0 0;
+    }
+    .hero .container { position: relative; z-index: 1; display: flex; align-items: center; gap: 60px; }
+    .hero-content { flex: 1; }
+    .hero-badge {
+      display: inline-block; background: rgba(196,132,122,.2); color: #c4847a;
+      padding: 6px 16px; border-radius: 50px; font-size: 13px; font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .hero-content h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 20px;
+    }
+    .hero-content h1 span { color: #c4847a; }
+    .hero-content p {
+      font-size: 18px; line-height: 1.7; color: rgba(255,255,255,.75);
+      margin-bottom: 32px; max-width: 520px;
+    }
+    .btn-group { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border-radius: 8px; font-size: 16px;
+      font-weight: 600; text-decoration: none; transition: all .25s;
+      cursor: pointer; border: none;
+    }
+    .btn-primary { background: #7a3b4e; color: #fff; }
+    .btn-primary:hover { background: #632e3e; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,59,78,.35); }
+    .btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.3); }
+    .btn-outline:hover { border-color: #c4847a; color: #c4847a; }
+    .hero-visual { flex: 1; }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .hero-img {
+      border-radius: 14px; height: 130px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #fff; text-align: center;
+      line-height: 1.4; letter-spacing: 0.5px;
+    }
+
+    /* SECTION */
+    section { padding: 90px 0; }
+    .section-label {
+      display: inline-block; font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: #7a3b4e; margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px; font-weight: 700;
+      margin-bottom: 16px; color: #2a2a2e;
+    }
+    .section-sub {
+      font-size: 17px; color: #777; max-width: 600px; line-height: 1.6;
+    }
+    .text-center { text-align: center; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    /* PRODUTOS — NOVO LAYOUT SCROLL-SPLIT */
+    .produtos-section {
+      padding: 0 !important;
+    }
+    .produtos-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+    .produtos-left {
+      width: 50%;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 60px;
+      background: #faf6f0;
+      z-index: 1;
+    }
+    .produtos-left .section-label {
+      margin-bottom: 48px;
+    }
+    .roller-viewport {
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+    }
+    .roller-track {
+      transition: transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+      will-change: transform;
+    }
+    .roller-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8px 0;
+      min-height: 150px;
+    }
+    .roller-item h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 44px;
+      font-weight: 700;
+      color: #2a2a2e;
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+    .roller-item p {
+      font-size: 17px;
+      color: #777;
+      line-height: 1.65;
+      max-width: 400px;
+    }
+    .produtos-left-content {
+      display: flex;
+      align-items: center;
+    }
+    .roller-viewport {
+      flex: 1;
+    }
+
+    .produtos-right {
+      width: 50%;
+    }
+    .foto-item {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      position: relative;
+    }
+    .foto-item .foto-nome {
+      font-size: 28px;
+      font-weight: 700;
+      opacity: 0.5;
+      letter-spacing: 1px;
+    }
+    .foto-item .foto-placeholder {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      opacity: 0.25;
+      margin-top: 12px;
+    }
+
+
+    /* DIFERENCIAIS */
+    #diferenciais {
+      min-height: 100vh;
+      display: flex; align-items: center;
+    }
+    .diffs-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+    }
+    .diff-card {
+      background: #fff; border-radius: 20px; padding: 56px 36px;
+      border: 1px solid rgba(0,0,0,.06); text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,.04);
+    }
+    .diff-img {
+      width: 80px; height: 80px; border-radius: 20px; margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .diff-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+    .diff-card p { font-size: 16px; color: #777; line-height: 1.7; }
+    #diferenciais .section-title {
+      max-width: 720px; margin-left: auto; margin-right: auto;
+    }
+
+    /* ORÇAMENTO */
+    .orcamento {
+      background: linear-gradient(135deg, #2a2a2e 0%, #3a3035 100%);
+      color: #fff;
+    }
+    .orcamento .section-title { color: #fff; }
+    .orcamento .section-sub { color: rgba(255,255,255,.65); }
+    .orcamento-wrapper {
+      display: flex; gap: 50px; margin-top: 48px; align-items: flex-start;
+    }
+    .orcamento-info { flex: 1; }
+    .orcamento-info h3 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+    .orcamento-info p { color: rgba(255,255,255,.7); line-height: 1.7; margin-bottom: 20px; }
+    .orcamento-info .contact-item {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+      font-size: 15px; color: rgba(255,255,255,.8);
+    }
+    .orcamento-info .contact-item .ic { width: 20px; text-align: center; }
+    .orcamento-form { flex: 1; background: #fff; border-radius: 16px; padding: 36px; color: #2a2a2e; }
+    .orcamento-form .form-group { margin-bottom: 18px; }
+    .orcamento-form label {
+      display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;
+      color: #555;
+    }
+    .orcamento-form input,
+    .orcamento-form select,
+    .orcamento-form textarea {
+      width: 100%; padding: 12px 16px; border: 1.5px solid #e0d8d0;
+      border-radius: 8px; font-size: 15px; font-family: inherit;
+      transition: border-color .2s; outline: none; background: #faf6f0;
+    }
+    .orcamento-form input:focus,
+    .orcamento-form select:focus,
+    .orcamento-form textarea:focus { border-color: #7a3b4e; }
+    .orcamento-form textarea { resize: vertical; min-height: 100px; }
+    .orcamento-form .btn { width: 100%; justify-content: center; margin-top: 6px; }
+
+    /* FOOTER */
+    footer {
+      background: #1a1a1c; color: rgba(255,255,255,.5); padding: 48px 0;
+      text-align: center; font-size: 14px;
+    }
+    footer strong { color: rgba(255,255,255,.9); }
+
+    /* WHATSAPP FLOAT */
+    .whatsapp-float {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: #25d366; color: #fff; width: 56px; height: 56px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(37,211,102,.4);
+      transition: transform .25s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1); }
+    .whatsapp-float svg { width: 26px; height: 26px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 860px) {
+      .hero { padding: 130px 0 70px; }
+      .hero .container { flex-direction: column; gap: 40px; }
+      .hero-content h1 { font-size: 32px; }
+      .hero-content p { font-size: 16px; }
+      .hero-grid { grid-template-columns: 1fr 1fr; }
+      .hero-img { height: 100px; }
+      #diferenciais { min-height: auto; padding: 80px 0; }
+      .diffs-grid { grid-template-columns: 1fr; gap: 24px; }
+      .orcamento-wrapper { flex-direction: column; }
+      nav a { margin-left: 16px; font-size: 13px; }
+      nav a:not(.btn-nav) { display: none; }
+      .section-title { font-size: 30px; }
+    }
+    @media (max-width: 900px) {
+      .produtos-wrapper { flex-direction: column; }
+      .produtos-left {
+        width: 100%;
+        position: relative;
+        height: auto;
+        padding: 80px 32px 60px;
+        min-height: 50vh;
+      }
+      .produtos-left .section-label { margin-bottom: 32px; }
+      .produtos-left-content { flex-direction: column; align-items: flex-start; }
+      .produtos-right { width: 100%; }
+      .foto-item { height: 70vh; min-height: 320px; }
+      .roller-item { min-height: 120px; }
+      .roller-item h2 { font-size: 32px; }
+      .roller-item p { font-size: 15px; }
+    }
+    @media (max-width: 480px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-img { height: 90px; }
+      .btn-group .btn { width: 100%; justify-content: center; }
+      .produtos-left { padding: 60px 24px 40px; }
+      .roller-item { min-height: 90px; }
+      .roller-item h2 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="header">
+  <div class="container">
+    <div class="logo" id="logo">Dibie<span>.</span></div>
+    <nav>
+      <a href="#produtos" id="nav-produtos">Produtos</a>
+      <a href="#diferenciais" id="nav-diferenciais">Diferenciais</a>
+      <a href="#orcamento" id="nav-orcamento" class="btn-nav">Solicitar Orçamento</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge" id="hero-badge">Sublimação Personalizada</div>
+      <h1 id="hero-title">Seu produto com a <span>sua cara</span>, do jeito que você imaginou</h1>
+      <p id="hero-desc">Canecas, camisetas, bonés e brindes personalizados com cuidado e qualidade. Para sua empresa ou para aquele presente especial.</p>
+      <div class="btn-group" id="hero-btns">
+        <a href="#orcamento" id="btn-cta" class="btn btn-primary">Solicitar Orçamento</a>
+        <a href="https://wa.me/5585985242758" target="_blank" id="btn-whatsapp-top" class="btn btn-outline">Fale Conosco</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-grid">
+        <div class="hero-img" style="background:#c4847a;">FOTO<br>Caneca</div>
+        <div class="hero-img" style="background:#a06a62;">FOTO<br>Camiseta</div>
+        <div class="hero-img" style="background:#a06a62;">FOTO<br>Boné</div>
+        <div class="hero-img" style="background:#c4847a;">FOTO<br>Chinelo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="produtos" class="produtos-section">
+  <div class="produtos-wrapper">
+    <div class="produtos-left">
+      <span class="section-label" id="produtos-label">Nossos Produtos</span>
+      <div class="produtos-left-content">
+        <div class="roller-viewport" id="rollerViewport">
+          <div class="roller-track" id="rollerTrack"></div>
+        </div>
+      </div>
+    </div>
+    <div class="produtos-right" id="produtosRight"></div>
+  </div>
+</section>
+
+<section id="diferenciais">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-label" id="diferenciais-label">Qualidade do começo ao fim</span>
+      <h2 class="section-title" id="diff-lead" style="font-size:26px;">Pode ser 1 caneca ou 100 brindes corporativos. <br />Na Dibie todo pedido merece o mesmo cuidado.</h2>
+    </div>
+    <div class="diffs-grid">
+      <div class="diff-card" id="diff-card-1">
+        <div class="diff-img" id="diff-icon-1" style="background:#7a3b4e;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 id="diff-title-1">Prazo cumprido</h3>
+        <p id="diff-text-1">Entregamos no combinado, com acabamento que passa confiança.</p>
+      </div>
+      <div class="diff-card" id="diff-card-2">
+        <div class="diff-img" id="diff-icon-2" style="background:#c4847a;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <h3 id="diff-title-2">Arte do zero</h3>
+        <p id="diff-text-2">Chega com uma ideia simples — a gente desenvolve e aprova com você.</p>
+      </div>
+      <div class="diff-card" id="diff-card-3">
+        <div class="diff-img" id="diff-icon-3" style="background:#a06a62;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <h3 id="diff-title-3">Sem enrolação</h3>
+        <p id="diff-text-3">Atendimento direto, orçamento rápido e sem burocracia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="orcamento" class="orcamento">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-label" id="orcamento-label" style="color:#c4847a;">Orçamento</span>
+      <h2 class="section-title" id="orcamento-title">Vamos fazer algo juntos?</h2>
+      <p class="section-sub mx-auto" id="orcamento-sub">Conte o que você precisa e a gente volta com uma proposta em até 24 horas. Sem compromisso.</p>
+    </div>
+    <div class="orcamento-wrapper">
+      <div class="orcamento-info">
+        <h3>Como funciona</h3>
+        <p>Preencha o formulário com os detalhes da sua demanda — produto, quantidade, arte — e nossa equipe retorna com uma proposta completa.</p>
+        <p>Pode ser 1 caneca ou 100 brindes corporativos. Todo pedido merece o mesmo cuidado.</p>
+        <div class="contact-item"><span class="ic">📱</span> (85) 98524-2758</div>
+        <div class="contact-item"><span class="ic">📧</span> contato@dibiesublimacao.com.br</div>
+        <div class="contact-item"><span class="ic">📍</span> Fortaleza - CE</div>
+      </div>
+      <form class="orcamento-form" id="form-orcamento">
+        <div class="form-group">
+          <label for="nome">Nome *</label>
+          <input type="text" id="nome" name="nome" required>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="whatsapp">WhatsApp *</label>
+          <input type="tel" id="whatsapp" name="whatsapp" placeholder="(85) 98524-2758" required>
+        </div>
+        <div class="form-group">
+          <label for="mensagem">Detalhes do pedido</label>
+          <textarea id="mensagem" name="mensagem" placeholder="Conte sobre sua ideia, arte, cores, prazo desejado..."></textarea>
+        </div>
+        <button type="submit" id="btn-enviar" class="btn btn-primary">Enviar Pedido de Orçamento</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer id="footer">
+  <div class="container">
+    <p>&copy; 2026 <strong>Dibie Sublimação</strong> — Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<a href="https://wa.me/5585985242758" target="_blank" id="whatsapp-float" class="whatsapp-float" title="Fale conosco pelo WhatsApp">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</a>
+
+<script>
+  // ---- Animator: custom animation library ----
+  const Animator = {
+    reveal(el, opts = {}) {
+      const {
+        delay = 0,
+        duration = 700,
+        distance = 50,
+        origin = 'bottom',
+        easing = 'cubic-bezier(.22,.61,.36,1)',
+        threshold = 0.15,
+      } = opts;
+
+      const start = {};
+      if (origin === 'bottom') start.transform = `translateY(${distance}px)`;
+      else if (origin === 'top') start.transform = `translateY(-${distance}px)`;
+      else if (origin === 'left') start.transform = `translateX(-${distance}px)`;
+      else if (origin === 'right') start.transform = `translateX(${distance}px)`;
+      start.opacity = 0;
+
+      Object.assign(el.style, start);
+
+      const ob = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        ob.disconnect();
+
+        el.style.transition = `opacity ${duration}ms ${easing} ${delay}ms, transform ${duration}ms ${easing} ${delay}ms`;
+        el.style.opacity = 1;
+        el.style.transform = 'translate(0,0)';
+
+        el.addEventListener('transitionend', () => {
+          el.style.transition = '';
+        }, { once: true });
+      }, { threshold });
+      ob.observe(el);
+      return el;
+    },
+
+    revealStagger(elements, opts = {}) {
+      const { stagger = 150, ...rest } = opts;
+      elements.forEach((el, i) => {
+        this.reveal(el, { ...rest, delay: i * stagger });
+      });
+    }
+  };
+
+  // ---- header scroll ----
+  const header = document.getElementById('header');
+  window.addEventListener('scroll', () => header.classList.toggle('scrolled', window.scrollY > 20));
+
+  // Produtos data
+  const produtos = [
+    { nome: 'Canecas',          desc: 'Personalizadas com sua arte. Ideais para presente, empresa ou coleção.',              cor: '#c4847a' },
+    { nome: 'Camisetas',        desc: 'Sua estampa com qualidade de sublimação. Cores vivas e duradouras.',                cor: '#7a3b4e' },
+    { nome: 'Bonés',            desc: 'Bonés personalizados com seu logo ou arte. Estilo e identidade para sua marca.',     cor: '#a06a62' },
+    { nome: 'Azulejos',         desc: 'Azulejos decorativos personalizados para sua cozinha ou comércio.',                 cor: '#7a3b4e' },
+    { nome: 'Squeezes',         desc: 'Squeezes personalizados para academia, empresa ou eventos.',                        cor: '#c4847a' },
+    { nome: 'Chinelos',         desc: 'Chinelos personalizados. Conforto e estilo do seu jeito.',                          cor: '#a06a62' },
+    { nome: 'Brindes Corp.',    desc: 'Brindes personalizados para sua empresa. De 1 a 100 peças com o mesmo cuidado.',   cor: '#7a3b4e' },
+  ]
+
+  const rollerTrack = document.getElementById('rollerTrack')
+  const rollerViewport = document.getElementById('rollerViewport')
+  const rightCol = document.getElementById('produtosRight')
+  let activeIndex = 0
+  let itemHeight = 0
+
+  // Build roller items
+  produtos.forEach((p, i) => {
+    const el = document.createElement('div')
+    el.className = 'roller-item'
+    el.innerHTML = `<h2>${p.nome}</h2><p>${p.desc}</p>`
+    rollerTrack.appendChild(el)
+  })
+
+  // Build photo items
+  produtos.forEach((p, i) => {
+    const el = document.createElement('div')
+    el.className = 'foto-item'
+    el.dataset.index = i
+    el.style.background = p.cor
+    el.innerHTML = `<span class="foto-nome">${p.nome}</span><span class="foto-placeholder">FOTO</span>`
+    rightCol.appendChild(el)
+  })
+
+
+
+  // Measure item height & set viewport
+  function measureHeight() {
+    itemHeight = rollerTrack.querySelector('.roller-item').offsetHeight
+    rollerViewport.style.height = itemHeight + 'px'
+  }
+
+  // Scroll roller to index
+  function goTo(index) {
+    index = Math.max(0, Math.min(index, produtos.length - 1))
+    if (index === activeIndex) return
+    activeIndex = index
+    rollerTrack.style.transform = `translateY(-${index * itemHeight}px)`
+  }
+
+  // Scroll-based active detection (viewport center)
+  function updateActiveFromScroll() {
+    const items = document.querySelectorAll('.foto-item')
+    if (!items.length) return
+    const viewCenter = window.innerHeight / 2
+    let best = 0, bestDist = Infinity
+    items.forEach((el, i) => {
+      const rect = el.getBoundingClientRect()
+      const dist = Math.abs(rect.top + rect.height / 2 - viewCenter)
+      if (dist < bestDist) { bestDist = dist; best = i }
+    })
+    goTo(best)
+  }
+
+  let rafId
+  window.addEventListener('scroll', () => {
+    if (rafId) return
+    rafId = requestAnimationFrame(() => {
+      updateActiveFromScroll()
+      rafId = null
+    })
+  })
+
+  // Observe photo items after DOM ready
+  function init() {
+    measureHeight()
+  }
+
+  // Re-measure on resize
+  let resizeTimer
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      measureHeight()
+      rollerTrack.style.transform = `translateY(-${activeIndex * itemHeight}px)`
+    }, 150)
+  })
+
+  // ---- whatsapp mask ----
+  IMask(document.getElementById('whatsapp'), { mask: '(00) 00000-0000' });
+
+  // ---- form ----
+  document.getElementById('form-orcamento').addEventListener('submit', function(e) {
+    e.preventDefault()
+    const btn = this.querySelector('button[type="submit"]')
+    const original = btn.textContent
+    btn.textContent = 'Enviando...'
+    btn.disabled = true
+
+    const data = new FormData(this)
+    const payload = Object.fromEntries(data.entries())
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: 'YOUR_ACCESS_KEY_HERE',
+        subject: 'Novo pedido de orçamento - Dibie Sublimação',
+        ...payload
+      })
+    })
+    .then(r => r.json())
+    .then(() => {
+      btn.textContent = 'Enviado com sucesso!'
+      btn.style.background = '#22c55e'
+      this.reset()
+    })
+    .catch(() => {
+      btn.textContent = 'Erro ao enviar. Tente novamente.'
+      btn.style.background = '#ef4444'
+      setTimeout(() => { btn.textContent = original; btn.style.background = '' }, 3000)
+    })
+    .finally(() => { btn.disabled = false })
+  })
+
+  // ---- Animator: apply reveals ----
+  function applyReveals() {
+    const diffCards = document.querySelectorAll('#diferenciais .diff-card');
+    if (diffCards.length) {
+      Animator.revealStagger(diffCards, { distance: 60, duration: 600, threshold: 0.1 });
+    }
+    const diffLead = document.querySelectorAll('#diff-lead');
+    diffLead.forEach(el => Animator.reveal(el, { distance: 30, delay: 200, duration: 600 }));
+  }
+
+  // Init after layout
+  if (document.readyState === 'complete') { init(); applyReveals(); }
+  else window.addEventListener('load', () => { init(); applyReveals(); });
+</script>
+</body>
+</html>
