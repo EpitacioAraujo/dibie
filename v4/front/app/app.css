@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* ---- Design tokens dibiê (portados 1:1 da v3) ---- */
+@theme {
+  --color-bg: #f5f3ef;
+  --color-ink: #1c1c1c;
+  --color-wine: #7a3b4e;
+  --color-ink-40: rgba(28, 28, 28, 0.4);
+  --color-ink-10: rgba(28, 28, 28, 0.1);
+  --color-ink-5: rgba(28, 28, 28, 0.05);
+  --color-white-60: rgba(255, 255, 255, 0.6);
+
+  --font-sans: "DM Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --ease-milo: cubic-bezier(0.44, 0, 0.56, 1);
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+/* ---- Escala tipográfica (valores exatos do template Milo, por breakpoint) ---- */
+@layer components {
+  .text-h2,
+  .text-h4 {
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.07em;
+  }
+  .text-h6 {
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: -0.05em;
+  }
+  .text-body {
+    font-size: 12px;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  @media (min-width: 1024px) {
+    .text-h2,
+    .text-h4 {
+      font-size: 48px;
+    }
+    .text-h6 {
+      font-size: 18px;
+    }
+  }
+}

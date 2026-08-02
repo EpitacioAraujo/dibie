@@ -1,0 +1,211 @@
+/* Hero (palco da intro). Valores estáticos portados 1:1 da v3.
+   Drift, zoom e saída das linhas são dirigidos por anime.js (inline styles),
+   não por transições CSS — aqui ficam só layout e estados iniciais. */
+
+.hero {
+  position: relative;
+  height: calc(100vh - 88px); /* fallback */
+  height: calc(100svh - 88px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 24px 24px;
+}
+@media (min-width: 768px) {
+  .hero {
+    padding: 0 48px 24px;
+  }
+}
+
+.hero-mosaic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .hero-mosaic {
+    gap: 56px;
+  }
+}
+
+.hero-mosaic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .hero-mosaic-row {
+    gap: 16px;
+  }
+}
+
+/* trilho mais largo que a viewport: espaço para o deslize lateral */
+.mosaic-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 124%;
+  margin-inline: -12%;
+  will-change: transform;
+}
+@media (min-width: 768px) {
+  .mosaic-track {
+    gap: 16px;
+  }
+}
+
+/* no mobile menos tiles — não vale o overflow */
+@media (max-width: 767px) {
+  .hero-mosaic-row[data-row="top"] .mosaic-track .mosaic-tile:nth-child(n + 4),
+  .hero-mosaic-row[data-row="bottom"] .mosaic-track .mosaic-tile:nth-child(n + 4),
+  .hero-mosaic-row[data-row="mid"] .mosaic-track .mosaic-tile:first-child,
+  .hero-mosaic-row[data-row="mid"] .mosaic-track .mosaic-tile:last-child {
+    display: none;
+  }
+}
+
+.mosaic-tile {
+  width: 132px;
+  height: 66px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: cover;
+  opacity: 0;
+}
+@media (min-width: 768px) {
+  .mosaic-tile {
+    width: 288px;
+    height: 144px;
+  }
+}
+
+.mosaic-spacer {
+  width: 132px;
+  height: 66px;
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .mosaic-spacer {
+    width: 288px;
+    height: 144px;
+  }
+}
+
+/* frame central: camada própria, absoluta na .hero. Posição/tamanho via JS. */
+.hero-frame {
+  position: absolute;
+  width: 132px;
+  height: 66px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  z-index: 2;
+  will-change: left, top, width, height;
+}
+@media (min-width: 768px) {
+  .hero-frame {
+    width: 288px;
+    height: 144px;
+  }
+}
+.hero-frame.zoomed {
+  border-radius: 24px;
+}
+
+/* carrossel */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-milo);
+}
+.hero-slide.active {
+  opacity: 1;
+}
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.4), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-milo);
+  pointer-events: none;
+}
+.hero-shade.on {
+  opacity: 1;
+}
+
+.hero-caption {
+  position: absolute;
+  right: 24px;
+  top: 55%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+  text-align: right;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s var(--ease-milo) 0.3s, visibility 0s 0.3s;
+}
+@media (min-width: 768px) {
+  .hero-caption {
+    right: 48px;
+  }
+}
+.hero-caption.on {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-caption-slides {
+  position: relative;
+  display: grid;
+}
+.hero-caption-slides .caption {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-milo);
+}
+.hero-caption-slides .caption.active {
+  opacity: 1;
+}
+.hero-caption-slides .caption p {
+  margin: 0;
+}
+.hero-caption-slides .caption .text-body {
+  margin-top: 8px;
+  color: var(--color-white-60);
+}
+
+.hero-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hero-dots .dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.hero-dots .dot.active {
+  background: #fff;
+}
