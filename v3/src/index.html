@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dibiê — Sublimação com carinho</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="intro">
+    <header class="site-header">
+      <a href="index.html" class="logo">
+        <img src="assets/img/logo.svg" alt="Dibiê" class="logo-img" />
+      </a>
+      <nav class="text-body">
+        <a href="pecas.html">Produtos</a>
+        <a href="#">O ateliê</a>
+        <a href="#">Contato</a>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <div class="hero-mosaic" id="mosaic">
+        <div class="hero-mosaic-row" data-row="top">
+          <div class="mosaic-track">
+            <img class="mosaic-tile" data-delay="1.1" src="assets/img/tile-01.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.5" src="assets/img/tile-02.webp" alt="" />
+            <img class="mosaic-tile" data-delay="1.35" src="assets/img/tile-03.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.8" src="assets/img/tile-04.webp" alt="" />
+            <img class="mosaic-tile" data-delay="1.6" src="assets/img/tile-09.webp" alt="" />
+          </div>
+        </div>
+        <div class="hero-mosaic-row" data-row="mid">
+          <!-- camada 1: trilho com os tiles + espaçador; desliza sem parar -->
+          <div class="mosaic-track">
+            <img class="mosaic-tile" data-delay="1.3" src="assets/img/tile-07.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.65" src="assets/img/tile-05.webp" alt="" />
+            <div class="mosaic-spacer" id="midSpacer"></div>
+            <img class="mosaic-tile" data-delay="1.25" src="assets/img/tile-06.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.9" src="assets/img/tile-01.webp" alt="" />
+          </div>
+          <!-- camada 2: o frame, sobreposto e sincronizado com o trilho;
+               para no centro e cresce, enquanto a camada 1 continua -->
+          <div class="hero-frame" data-delay="1.0" id="heroFrame">
+            <div class="hero-slide active">
+              <img src="assets/img/slide-01.webp" alt="Caneca personalizada dibiê" />
+            </div>
+            <div class="hero-slide">
+              <img src="assets/img/slide-02.webp" alt="Coleção de canecas do ateliê" />
+            </div>
+            <div class="hero-slide">
+              <img src="assets/img/slide-03.webp" alt="Caneca com estampa sublimada" />
+            </div>
+            <div class="hero-shade"></div>
+            <div class="hero-caption">
+              <div class="hero-caption-slides">
+                <div class="caption active">
+                  <p class="text-h2">Feita pra contar histórias</p>
+                  <p class="text-body">Conheça as canecas</p>
+                </div>
+                <div class="caption">
+                  <p class="text-h2">Cada peça, um carinho</p>
+                  <p class="text-body">Feito à mão, feito pra você</p>
+                </div>
+                <div class="caption">
+                  <p class="text-h2">Cores que abraçam</p>
+                  <p class="text-body">Personalize a sua</p>
+                </div>
+              </div>
+              <div class="hero-dots" id="heroDots">
+                <button class="dot active" aria-label="Slide 1"></button>
+                <button class="dot" aria-label="Slide 2"></button>
+                <button class="dot" aria-label="Slide 3"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-mosaic-row" data-row="bottom">
+          <div class="mosaic-track">
+            <img class="mosaic-tile" data-delay="0.75" src="assets/img/tile-07.webp" alt="" />
+            <img class="mosaic-tile" data-delay="1.45" src="assets/img/tile-08.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.6" src="assets/img/tile-10.webp" alt="" />
+            <img class="mosaic-tile" data-delay="1.15" src="assets/img/tile-02.webp" alt="" />
+            <img class="mosaic-tile" data-delay="0.85" src="assets/img/tile-05.webp" alt="" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção 1: intro do ateliê (bloco único, sem stagger) -->
+    <section class="container grid-2 section reveal">
+      <div>
+        <p class="text-body">O ateliê</p>
+      </div>
+      <div>
+        <h2 class="text-h4" style="max-width: 720px; margin: 0">
+          A dibiê é um ateliê de sublimação que transforma memórias em peças do dia a dia —
+          canecas feitas uma a uma, com cor, cuidado e a sua história estampada.
+        </h2>
+      </div>
+    </section>
+
+    <!-- Seção 2: produtos em destaque (fade por linha, stagger por card) -->
+    <section class="container">
+      <div class="prod-row cols-3" data-stagger>
+        <a class="product reveal" href="pecas.html">
+          <img src="assets/img/tile-01.webp" alt="Caneca Flora" />
+          <div class="product-meta text-body"><span>Flora</span><span class="text-black-40">R$ 49</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="pecas.html">
+          <img src="assets/img/tile-02.webp" alt="Caneca Sol" />
+          <div class="product-meta text-body"><span>Sol</span><span class="text-black-40">R$ 45</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="pecas.html">
+          <img src="assets/img/tile-03.webp" alt="Caneca Maré" />
+          <div class="product-meta text-body"><span>Maré</span><span class="text-black-40">R$ 52</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+      </div>
+      <div class="prod-row cols-2" data-stagger>
+        <a class="product reveal" href="pecas.html">
+          <img src="assets/img/tile-04.webp" alt="Caneca Aurora" />
+          <div class="product-meta text-body"><span>Aurora</span><span class="text-black-40">R$ 59</span></div>
+          <p class="product-cat">Caneca personalizada</p>
+        </a>
+        <a class="product reveal" href="pecas.html">
+          <img src="assets/img/tile-05.webp" alt="Caneca Luar" />
+          <div class="product-meta text-body"><span>Luar</span><span class="text-black-40">R$ 49</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+      </div>
+      <div class="see-all reveal">
+        <a class="pill text-body" href="pecas.html">Ver todas</a>
+      </div>
+    </section>
+
+    <!-- Seção 3: confiança (heading em bloco, cards staggered) -->
+    <section class="container section-trust">
+      <div class="trust-head reveal">
+        <h2 class="text-h2">Confiança de quem<br />já estampou com a gente</h2>
+        <p class="text-body text-black-40">
+          Nosso cuidado em cada peça conquistou clientes pelo Brasil inteiro.
+        </p>
+      </div>
+      <div class="trust-cards" data-stagger>
+        <div class="trust-card reveal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <p class="text-body">Pagamento seguro</p>
+          <p class="text-body text-black-40">Transações protegidas para comprar sem preocupação</p>
+        </div>
+        <div class="trust-card reveal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 13a8 8 0 0 1 16 0"/><rect x="2" y="13" width="4" height="6" rx="2"/><rect x="18" y="13" width="4" height="6" rx="2"/></svg>
+          <p class="text-body">Atendimento próximo</p>
+          <p class="text-body text-black-40">Sempre por perto para ajudar no seu pedido</p>
+        </div>
+        <div class="trust-card reveal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9v10h16V9"/><path d="M9 5l3-3 3 3"/><path d="M12 2v12"/></svg>
+          <p class="text-body">Troca em 30 dias</p>
+          <p class="text-body text-black-40">Compre sem medo com nossa política de troca</p>
+        </div>
+        <div class="trust-card reveal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5z"/><path d="M3 7l9 5 9-5"/><path d="M12 12v10"/></svg>
+          <p class="text-body">Envio para todo o Brasil</p>
+          <p class="text-body text-black-40">Onde você estiver, sua caneca chega</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção 4: o ateliê por dentro (texto + imagem em bloco único) -->
+    <section class="container grid-2 section-team">
+      <div class="reveal">
+        <h2 class="text-h2" style="max-width: 480px; margin: 0">
+          Um ateliê apaixonado por transformar memórias em peças
+        </h2>
+        <p class="text-body text-black-40">
+          Depois de anos estampando histórias — presentes de família, lembranças de festa,
+          canecas de equipe — decidimos abrir o ateliê para todo mundo.
+        </p>
+        <a href="#" class="text-body team-link">O ateliê →</a>
+      </div>
+      <img class="reveal" src="assets/img/slide-02.webp" alt="Produção no ateliê dibiê" />
+    </section>
+
+    <!-- Seção 5: newsletter -->
+    <section class="container section-news">
+      <div class="reveal">
+        <h2 class="text-h2">Fica de olho na gente</h2>
+        <p class="text-body text-black-40">
+          Cadastre-se para saber das novidades em primeira mão e ganhar descontos especiais.
+        </p>
+        <form class="news-input" onsubmit="return false">
+          <input type="email" placeholder="Seu e-mail" aria-label="Seu e-mail" />
+          <button type="submit" aria-label="Enviar">→</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Seção 6: footer (mesmo bloco em todas as páginas) -->
+    <footer class="site-footer">
+      <p class="footer-wordmark reveal-color" aria-hidden="true">dibiê<sup>®</sup></p>
+      <div class="footer-bottom text-body">
+        <div class="footer-social">
+          <a href="#">Instagram</a>
+          <a href="#">Whatsapp</a>
+        </div>
+        <a href="mailto:contato@dibie.com.br">contato@dibie.com.br</a>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+  </body>
+</html>

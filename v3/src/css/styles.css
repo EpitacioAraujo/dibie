@@ -1,0 +1,891 @@
+/* ---- Design tokens (identidade dibiê sobre a estrutura do template Milo) ---- */
+:root {
+  --bg: #f5f3ef;
+  --ink: #1c1c1c;
+  --wine: #7a3b4e;
+  --ink-40: rgba(28, 28, 28, 0.4);
+  --ink-10: rgba(28, 28, 28, 0.1);
+  --ink-5: rgba(28, 28, 28, 0.05);
+  --white-60: rgba(255, 255, 255, 0.6);
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --ease-milo: cubic-bezier(0.44, 0, 0.56, 1);
+  --header-h: 88px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* trava o scroll durante a intro */
+body.intro {
+  overflow: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- Type scale (portada do v2 / Milo) ---- */
+.text-h2 {
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.07em;
+}
+.text-h4 {
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.07em;
+}
+.text-h6 {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+.text-body {
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 1024px) {
+  .text-h2,
+  .text-h4 {
+    font-size: 48px;
+  }
+  .text-h6 {
+    font-size: 18px;
+  }
+}
+
+.text-black-40 {
+  color: var(--ink-40);
+}
+
+/* ---- Layout ---- */
+.container {
+  padding-inline: 24px;
+}
+@media (min-width: 768px) {
+  .container {
+    padding-inline: 48px;
+  }
+}
+
+.grid-2 {
+  display: grid;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+/* ---- Header (fase 4: aparece junto com o zoom) ---- */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 24px;
+  height: var(--header-h);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.8s var(--ease-milo), transform 0.8s var(--ease-milo);
+}
+@media (min-width: 768px) {
+  .site-header {
+    padding: 32px 48px;
+  }
+}
+body.zooming .site-header {
+  opacity: 1;
+  transform: none;
+}
+.site-header nav {
+  display: none;
+  gap: 32px;
+}
+@media (min-width: 768px) {
+  .site-header nav {
+    display: flex;
+  }
+}
+.site-header nav a:hover,
+.logo:hover {
+  opacity: 0.7;
+}
+.logo-img {
+  display: block;
+  height: 28px;
+  width: auto;
+}
+@media (min-width: 768px) {
+  .logo-img {
+    height: 36px;
+  }
+}
+
+/* ---- Hero (palco da intro) ---- */
+.hero {
+  position: relative;
+  height: calc(100vh - var(--header-h)); /* fallback */
+  height: calc(100svh - var(--header-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 24px 24px;
+}
+@media (min-width: 768px) {
+  .hero {
+    padding: 0 48px 24px;
+  }
+}
+
+.hero-mosaic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .hero-mosaic {
+    gap: 56px;
+  }
+}
+/* 3 linhas ocupando a largura toda, não agrupadas ao redor do centro */
+.hero-mosaic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .hero-mosaic-row {
+    gap: 16px;
+  }
+}
+
+/* trilho mais largo que a viewport: dá espaço pro deslize lateral sem
+   abrir buraco nas bordas. O row cuida do eixo Y, o track do eixo X. */
+.mosaic-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 124%;
+  margin-inline: -12%;
+  transform: translateX(var(--from, 0));
+  transition: transform var(--dur, 6s) var(--tease, linear);
+}
+@media (min-width: 768px) {
+  .mosaic-track {
+    gap: 16px;
+  }
+}
+body.drifting .mosaic-track {
+  transform: translateX(var(--to, 0));
+}
+
+/* as 3 linhas deslizam para a esquerda, cada uma numa velocidade,
+   e NENHUMA para: quando o frame central cruza o centro da tela o JS
+   o destaca do trilho (FLIP) e ele cresce — o resto segue deslizando. */
+.hero-mosaic-row[data-row='top'] .mosaic-track {
+  --from: 4%;
+  --to: -7%;
+  --dur: 6s;
+}
+.hero-mosaic-row[data-row='mid'] .mosaic-track {
+  --from: 12%;
+  --to: -12%;
+  --dur: 7s;
+}
+.hero-mosaic-row[data-row='bottom'] .mosaic-track {
+  --from: 5%;
+  --to: -6.5%;
+  --dur: 7.5s;
+}
+
+/* no mobile menos tiles — não vale o overflow */
+@media (max-width: 767px) {
+  .hero-mosaic-row[data-row='top'] .mosaic-track .mosaic-tile:nth-child(n + 4),
+  .hero-mosaic-row[data-row='bottom'] .mosaic-track .mosaic-tile:nth-child(n + 4),
+  .hero-mosaic-row[data-row='mid'] .mosaic-track .mosaic-tile:first-child,
+  .hero-mosaic-row[data-row='mid'] .mosaic-track .mosaic-tile:last-child {
+    display: none;
+  }
+}
+
+/* fases 2–3: tiles surgem fora de ordem, só com fade-in (sem scale) */
+.mosaic-tile {
+  width: 132px;
+  height: 66px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-milo);
+}
+@media (min-width: 768px) {
+  .mosaic-tile {
+    width: 288px;
+    height: 144px;
+  }
+}
+.mosaic-tile.is-visible {
+  opacity: 1;
+}
+
+/* espaçador: reserva no trilho o "lugar" visual do frame central */
+.mosaic-spacer {
+  width: 132px;
+  height: 66px;
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .mosaic-spacer {
+    width: 288px;
+    height: 144px;
+  }
+}
+
+/* fases 4–5: linhas de cima/baixo saem, tiles laterais somem,
+   o frame central expande até virar o hero */
+body.zooming .hero-mosaic-row[data-row='top'] {
+  transform: translateY(-160%);
+  opacity: 0;
+}
+body.zooming .hero-mosaic-row[data-row='bottom'] {
+  transform: translateY(160%);
+  opacity: 0;
+}
+.hero-mosaic-row[data-row='top'],
+.hero-mosaic-row[data-row='bottom'] {
+  transition: transform 1s var(--ease-milo), opacity 0.9s var(--ease-milo);
+}
+body.zooming .hero-mosaic-row[data-row='mid'] .mosaic-tile {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-milo) 0.5s;
+}
+
+/* ---- Frame central / hero ----
+   Camada própria, absoluta em relação à .hero (referencial parado).
+   O JS o posiciona sobre o espaçador do trilho e o anima na mesma
+   velocidade — visualmente é a mesma linha; ao chegar no centro,
+   para e cresce (left/top/width/height). */
+.hero-frame {
+  position: absolute;
+  width: 132px;
+  height: 66px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  z-index: 2;
+  /* posição/tamanho são animados via Web Animations API no JS;
+     aqui só o fade e o raio de borda */
+  transition:
+    opacity 0.8s var(--ease-milo),
+    border-radius 1.2s var(--ease-milo);
+}
+@media (min-width: 768px) {
+  .hero-frame {
+    width: 288px;
+    height: 144px;
+  }
+}
+body.zooming .hero-frame {
+  border-radius: 24px;
+}
+.hero-frame.is-visible {
+  opacity: 1;
+}
+
+/* ---- Carrossel (fase 6): transição por fading + indicador ---- */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-milo);
+}
+.hero-slide.active {
+  opacity: 1;
+}
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.4), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-milo);
+  pointer-events: none;
+}
+body.hero-ready .hero-shade {
+  opacity: 1;
+}
+
+.hero-caption {
+  position: absolute;
+  right: 24px;
+  top: 55%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+  text-align: right;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s var(--ease-milo) 0.3s, visibility 0s 0.3s;
+}
+@media (min-width: 768px) {
+  .hero-caption {
+    right: 48px;
+  }
+}
+body.hero-ready .hero-caption {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-caption-slides {
+  position: relative;
+  display: grid;
+}
+.hero-caption-slides .caption {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-milo);
+}
+.hero-caption-slides .caption.active {
+  opacity: 1;
+}
+.hero-caption-slides .caption p {
+  margin: 0;
+}
+.hero-caption-slides .caption .text-body {
+  margin-top: 8px;
+  color: var(--white-60);
+}
+
+.hero-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hero-dots .dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.hero-dots .dot.active {
+  background: #fff;
+}
+
+/* ---- Scroll reveal (padrão único das seções pós-hero) ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease-milo), transform 0.6s var(--ease-milo);
+  transition-delay: var(--reveal-delay, 0s);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+/* wordmark do footer: só cor, trigger próprio, independente do bloco acima */
+.reveal-color {
+  color: #b9b5ae;
+  transition: color 1.2s var(--ease-milo);
+}
+.reveal-color.is-in {
+  color: var(--ink);
+}
+
+/* ---- Páginas sem intro (ex.: pecas.html): header visível direto ---- */
+body.page .site-header {
+  opacity: 1;
+  transform: none;
+}
+
+/* header fixo durante o scroll (padrão Milo: sobrepõe as imagens) */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+/* véu texturizado atrás do conteúdo do header: aparece ao rolar (> 0) */
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: rgba(245, 243, 239, 0.6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-milo);
+}
+body.scrolled .site-header::before {
+  opacity: 1;
+}
+
+/* ---- Seções ---- */
+.section {
+  padding-block: 100px 70px;
+}
+
+/* grid de produtos (Home 3+2, Nossas peças 3+2+3) */
+.prod-row {
+  display: grid;
+  gap: 40px 16px;
+  margin-bottom: 40px;
+}
+@media (min-width: 768px) {
+  .prod-row.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .prod-row.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.product img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.product-meta span:first-child {
+  font-weight: 600;
+}
+.product-cat {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+}
+.see-all {
+  display: flex;
+  justify-content: center;
+}
+.pill {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--ink-5);
+  transition: background 0.3s ease;
+}
+.pill:hover {
+  background: var(--ink-10);
+}
+
+/* "Confiança de quem já estampou com a gente" */
+.section-trust {
+  padding-block: 140px 0;
+  text-align: center;
+}
+.trust-head p {
+  max-width: 340px;
+  margin: 16px auto 0;
+}
+.trust-cards {
+  display: grid;
+  gap: 16px;
+  margin-top: 64px;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .trust-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.trust-card {
+  background: var(--ink-5);
+  border-radius: 8px;
+  padding: 40px 24px;
+}
+.trust-card svg {
+  display: block;
+  margin: 0 auto 24px;
+  color: var(--ink);
+}
+.trust-card p {
+  margin: 0;
+}
+.trust-card p + p {
+  margin-top: 6px;
+  max-width: 200px;
+  margin-inline: auto;
+}
+
+/* ateliê / time */
+.section-team {
+  padding-block: 140px 0;
+  align-items: center;
+}
+.section-team img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.section-team .text-body.text-black-40 {
+  max-width: 300px;
+  margin: 40px 0 32px;
+}
+.team-link {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* newsletter */
+.section-news {
+  padding-block: 160px 120px;
+  text-align: center;
+}
+.section-news p {
+  max-width: 320px;
+  margin: 16px auto 32px;
+}
+.news-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(320px, 100%);
+  margin: 0 auto;
+  padding: 6px 6px 6px 20px;
+  border-radius: 999px;
+  background: var(--ink-5);
+}
+.news-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font: inherit;
+}
+.news-input button {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* página Nossas peças */
+.page-head {
+  padding-block: 120px 56px;
+}
+.page-head h1 {
+  margin: 0;
+}
+.more-to-come {
+  padding-block: 40px 0;
+  text-align: right;
+}
+
+/* ---- Footer ---- */
+.site-footer {
+  padding: 48px 24px 32px;
+}
+@media (min-width: 768px) {
+  .site-footer {
+    padding: 48px 48px 32px;
+  }
+}
+.footer-wordmark {
+  margin: 0;
+  font-size: clamp(96px, 24vw, 380px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+.footer-wordmark sup {
+  font-size: 0.12em;
+  letter-spacing: 0;
+  vertical-align: super;
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+.footer-social {
+  display: flex;
+  gap: 24px;
+}
+.footer-bottom a:hover {
+  opacity: 0.7;
+}
+
+/* ---- Carrinho / compra via WhatsApp ---- */
+.cart-btn {
+  border: none;
+  background: var(--ink-5);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.cart-btn:hover {
+  background: var(--ink-10);
+}
+#cartCount {
+  display: inline-block;
+  min-width: 18px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  text-align: center;
+}
+
+.shop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-milo), visibility 0s 0.3s;
+  z-index: 40;
+}
+body.shop-open {
+  overflow: hidden;
+}
+body.shop-open .shop-overlay {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s var(--ease-milo);
+}
+
+.shop-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.shop-close:hover {
+  opacity: 1;
+}
+
+.prod-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -46%);
+  width: min(400px, calc(100vw - 32px));
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 20px;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease-milo), transform 0.3s var(--ease-milo), visibility 0s 0.3s;
+}
+.prod-modal.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s var(--ease-milo), transform 0.3s var(--ease-milo);
+}
+.prod-modal .shop-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+.prod-modal img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.prod-modal .product-cat {
+  margin-top: 16px;
+}
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--ink-5);
+  border-radius: 999px;
+  padding: 4px;
+}
+.qty-stepper button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.qty-stepper button:hover {
+  background: var(--ink-10);
+}
+.qty-stepper span {
+  min-width: 20px;
+  text-align: center;
+}
+
+.btn-dark {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+.btn-dark:hover {
+  opacity: 0.85;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 100vw);
+  background: var(--bg);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  transform: translateX(100%);
+  transition: transform 0.4s var(--ease-milo);
+}
+.cart-drawer.open {
+  transform: translateX(0);
+}
+.cart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cart-item img {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.cart-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cart-foot {
+  border-top: 1px solid var(--ink-10);
+  padding-top: 16px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cart-foot .btn-dark {
+  flex: none;
+}
+
+/* ---- Acessibilidade: sem animação, entrega o estado final direto ---- */
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-tile,
+  .mosaic-track,
+  .hero-frame,
+  .hero-mosaic-row,
+  .site-header,
+  .hero-shade,
+  .hero-caption,
+  .hero-slide {
+    transition: none !important;
+  }
+  .reveal,
+  .reveal-color {
+    transition: none !important;
+    opacity: 1;
+    transform: none;
+    color: var(--ink);
+  }
+}

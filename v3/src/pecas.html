@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nossas peças — dibiê</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <a href="index.html" class="logo">
+        <img src="assets/img/logo.svg" alt="Dibiê" class="logo-img" />
+      </a>
+      <nav class="text-body">
+        <a href="pecas.html">Produtos</a>
+        <a href="#">O ateliê</a>
+        <a href="#">Contato</a>
+      </nav>
+    </header>
+
+    <!-- heading estático, sem animação de entrada -->
+    <div class="container page-head">
+      <h1 class="text-h2">Nossas peças</h1>
+    </div>
+
+    <section class="container">
+      <div class="prod-row cols-3" data-stagger>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-01.webp" alt="Caneca Flora" />
+          <div class="product-meta text-body"><span>Flora</span><span class="text-black-40">R$ 49</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-02.webp" alt="Caneca Sol" />
+          <div class="product-meta text-body"><span>Sol</span><span class="text-black-40">R$ 45</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-03.webp" alt="Caneca Maré" />
+          <div class="product-meta text-body"><span>Maré</span><span class="text-black-40">R$ 52</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+      </div>
+      <div class="prod-row cols-2" data-stagger>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-04.webp" alt="Caneca Aurora" />
+          <div class="product-meta text-body"><span>Aurora</span><span class="text-black-40">R$ 59</span></div>
+          <p class="product-cat">Caneca personalizada</p>
+        </a>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-05.webp" alt="Caneca Luar" />
+          <div class="product-meta text-body"><span>Luar</span><span class="text-black-40">R$ 49</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+      </div>
+      <div class="prod-row cols-3" data-stagger>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-06.webp" alt="Caneca Brisa" />
+          <div class="product-meta text-body"><span>Brisa</span><span class="text-black-40">R$ 45</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-07.webp" alt="Caneca Terra" />
+          <div class="product-meta text-body"><span>Terra</span><span class="text-black-40">R$ 55</span></div>
+          <p class="product-cat">Caneca</p>
+        </a>
+        <a class="product reveal" href="#">
+          <img src="assets/img/tile-08.webp" alt="Kit Festa" />
+          <div class="product-meta text-body"><span>Festa</span><span class="text-black-40">R$ 62</span></div>
+          <p class="product-cat">Kit</p>
+        </a>
+      </div>
+      <div class="more-to-come reveal">
+        <h2 class="text-h2" style="margin: 0">...e muito mais por vir.</h2>
+      </div>
+    </section>
+
+    <!-- footer: mesmo bloco da Home -->
+    <footer class="site-footer">
+      <p class="footer-wordmark reveal-color" aria-hidden="true">dibiê<sup>®</sup></p>
+      <div class="footer-bottom text-body">
+        <div class="footer-social">
+          <a href="#">Instagram</a>
+          <a href="#">Whatsapp</a>
+        </div>
+        <a href="mailto:contato@dibie.com.br">contato@dibie.com.br</a>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+  </body>
+</html>
