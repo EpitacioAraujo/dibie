@@ -1,7 +1,7 @@
 # Stack única: db + API (Laravel) + site (React/nginx) + túnel Cloudflare.
 # Dev: `docker compose up` usa os defaults (localhost, volumes nomeados, sem túnel).
-# Prod: valores vêm do .env na raiz ops + backend.env/front.env/cloudflared.env.
-#   CODE_DIR=./code  PGDATA=./pgdata  STORAGE=./storage  COMPOSE_PROFILES=prod
+# Prod: valores vêm do .env na raiz ops + backend.env/cloudflared.env.
+#   CODE_DIR=./code  COMPOSE_PROFILES=prod   (pgdata/ e storage/ são bind mounts)
 services:
   db:
     image: postgres:16-alpine
@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-dibie}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dibie_secret}
     volumes:
-      - ${PGDATA:-pgdata}:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dibie}"]
       interval: 5s
@@ -34,7 +34,7 @@ services:
     working_dir: /var/www
     volumes:
       - ${CODE_DIR:-.}/backend:/var/www
-      - ${STORAGE:-storage}:/var/www/storage/app/public
+      - ./storage:/var/www/storage/app/public
     ports:
       - "${API_PORT:-8000}:8000"
 
@@ -64,7 +64,3 @@ services:
     depends_on:
       - front
       - backend
-
-volumes:
-  pgdata:
-  storage:
