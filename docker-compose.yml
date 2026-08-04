@@ -33,7 +33,6 @@ services:
         condition: service_healthy
     working_dir: /var/www
     volumes:
-      - ${CODE_DIR:-.}/backend:/var/www
       - ./storage:/var/www/storage/app/public
     ports:
       - "${API_PORT:-8000}:8000"

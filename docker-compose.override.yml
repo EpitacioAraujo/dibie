@@ -1,0 +1,8 @@
+# Override de DEV: auto-carregado por `docker compose up` (sem -f explícito).
+# Monta o código-fonte pra edição ao vivo. Prod NÃO usa este arquivo
+# (deploy.sh passa -f explícito), então roda a imagem self-contained.
+# Dev: rode `composer install` local uma vez (o mount cobre o vendor da imagem).
+services:
+  backend:
+    volumes:
+      - ./backend:/var/www
