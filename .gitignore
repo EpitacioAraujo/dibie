@@ -1,0 +1,8 @@
+# Dados dos containers (bind mounts do docker-compose)
+pgdata/
+storage/
+
+# Configuração local/produção com segredos (env_file do compose)
+backend.env
+front.env
+cloudflared.env
