@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\HeroController as AdminHeroController;
 use App\Http\Controllers\Admin\MockupController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HeroController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +16,9 @@ use Illuminate\Support\Facades\Route;
 // ---- Público (site) ----
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::get('products', [ProductController::class, 'index']);
+Route::get('categories', [ProductController::class, 'categories']);
 Route::get('products/{slug}', [ProductController::class, 'show']);
+Route::get('hero', [HeroController::class, 'index']);
 Route::post('orders', [OrderController::class, 'store']);
 
 // ---- Autenticado ----
@@ -30,6 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::match(['put', 'patch'], 'products/{product}', [AdminProductController::class, 'update'])->middleware('permission:products.update');
         Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->middleware('permission:products.delete');
         Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->middleware('permission:products.update');
+        Route::patch('products-featured', [AdminProductController::class, 'featured'])->middleware('permission:products.update');
+
+        // Home (hero do site) — reusa a permissão de produtos, como o endpoint de mockups
+        Route::get('hero', [AdminHeroController::class, 'index'])->middleware('permission:products.update');
+        Route::post('hero', [AdminHeroController::class, 'store'])->middleware('permission:products.update');
+        Route::put('hero', [AdminHeroController::class, 'update'])->middleware('permission:products.update');
+        Route::delete('hero/{hero}', [AdminHeroController::class, 'destroy'])->middleware('permission:products.update');
 
         // Mockups (gerador 3D + IA)
         Route::post('mockups/render', [MockupController::class, 'render'])->middleware('permission:products.update');
