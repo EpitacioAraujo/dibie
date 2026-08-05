@@ -22,6 +22,11 @@
     margin: 0;
     padding: 0;
   }
+  /* Botão único de escala do site: toda a tipografia é rem, então mexer aqui
+     aumenta/diminui tudo junto. 116% = corpo de 12px vira ~14px. */
+  html {
+    font-size: 116%;
+  }
   body {
     background: var(--color-bg);
     color: var(--color-ink);
@@ -34,23 +39,44 @@
   }
 }
 
+/* Botão com alteração pendente: clareia e escurece em loop. */
+@keyframes pulse-save {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.55);
+  }
+}
+.pulse-save {
+  animation: pulse-save 1.2s var(--ease-milo) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-save {
+    animation: none;
+    outline: 2px solid var(--color-wine);
+    outline-offset: 2px;
+  }
+}
+
 /* ---- Escala tipográfica (valores exatos do template Milo, por breakpoint) ---- */
 @layer components {
   .text-h2,
   .text-h4 {
-    font-size: 24px;
+    font-size: 1.5rem;
     line-height: 1.1;
     font-weight: 600;
     letter-spacing: -0.07em;
   }
   .text-h6 {
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.4;
     font-weight: 600;
     letter-spacing: -0.05em;
   }
   .text-body {
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.3;
     font-weight: 600;
     letter-spacing: -0.03em;
@@ -58,10 +84,10 @@
   @media (min-width: 1024px) {
     .text-h2,
     .text-h4 {
-      font-size: 48px;
+      font-size: 3rem;
     }
     .text-h6 {
-      font-size: 18px;
+      font-size: 1.125rem;
     }
   }
 }

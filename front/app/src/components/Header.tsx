@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useUI } from "../../stores/ui";
 import { useCart, cartCount } from "../../stores/cart";
+import { INSTAGRAM, WHATSAPP_URL } from "../../lib/config";
+import { InstagramIcon, WhatsAppIcon } from "./ui/icons";
 
 const GRAIN =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")";
@@ -57,24 +59,41 @@ export function Header() {
         <Link to="/pecas" className="hover:opacity-70">
           Produtos
         </Link>
-        <a href="#" className="hover:opacity-70">
-          Sobre
-        </a>
-        <a href="#" className="hover:opacity-70">
-          Contato
-        </a>
       </nav>
 
-      <button
-        type="button"
-        onClick={openDrawer}
-        className="cursor-pointer rounded-full bg-ink-5 px-3.5 py-2 text-body transition-colors hover:bg-ink-10"
-      >
-        Carrinho{" "}
-        <span className="ml-1 inline-block min-w-[18px] rounded-full bg-ink px-1 py-px text-center text-white">
-          {count}
-        </span>
-      </button>
+      <div className="flex items-center gap-2">
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Fale com a dibiê no WhatsApp"
+          title="WhatsApp"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-5 transition-colors hover:bg-ink-10"
+        >
+          <WhatsAppIcon />
+        </a>
+        <a
+          href={INSTAGRAM}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Instagram da dibiê"
+          title="Instagram"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-5 transition-colors hover:bg-ink-10"
+        >
+          <InstagramIcon />
+        </a>
+
+        <button
+          type="button"
+          onClick={openDrawer}
+          className="cursor-pointer rounded-full bg-ink-5 px-3.5 py-2 text-body transition-colors hover:bg-ink-10"
+        >
+          Carrinho{" "}
+          <span className="ml-1 inline-block min-w-[18px] rounded-full bg-ink px-1 py-px text-center text-white">
+            {count}
+          </span>
+        </button>
+      </div>
     </header>
   );
 }

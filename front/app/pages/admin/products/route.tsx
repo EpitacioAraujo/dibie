@@ -1,21 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
+import { move } from "../../../lib/move";
 import { PencilIcon, TrashIcon } from "../../../src/components/ui/icons";
-import { ImageUploader } from "./components/ImageUploader";
+import { ImageUploader, isSaved, type UploaderItem } from "./components/ImageUploader";
 
 type Draft = {
   id?: number;
-  slug: string;
   name: string;
   price: string;
   cat: string;
   active: boolean;
-  images: File[];
+  images: UploaderItem[];
 };
 
 const EMPTY: Draft = {
-  slug: "",
   name: "",
   price: "",
   cat: "",
@@ -34,17 +33,23 @@ export default function AdminProducts() {
   } = useAdminProducts();
   const [draft, setDraft] = useState<Draft | null>(null);
   const busy = create.isPending || update.isPending;
-  const existingImages = rows.find((r) => r.id === draft?.id)?.images ?? [];
 
   async function save() {
     if (!draft) return;
+    // Sem slug: o backend gera o código de 8 caracteres no cadastro e mantém
+    // o existente na edição.
     const fd = new FormData();
-    fd.append("slug", draft.slug);
     fd.append("name", draft.name);
     fd.append("price", draft.price);
     fd.append("cat", draft.cat);
     fd.append("active", draft.active ? "1" : "0");
-    draft.images.forEach((file) => fd.append("images[]", file));
+    // order[] carrega a ordem final: id da imagem salva ou new:<índice de images[]>.
+    let pending = 0;
+    draft.images.forEach((item) => {
+      if (isSaved(item)) return fd.append("order[]", String(item.image.id));
+      fd.append("images[]", item.file);
+      fd.append("order[]", `new:${pending++}`);
+    });
     if (draft.id) await update.mutateAsync({ id: draft.id, body: fd });
     else await create.mutateAsync(fd);
     setDraft(null);
@@ -108,12 +113,11 @@ export default function AdminProducts() {
                     onClick={() =>
                       setDraft({
                         id: p.id,
-                        slug: p.slug,
                         name: p.name,
                         price: String(p.price),
                         cat: p.cat,
                         active: p.active,
-                        images: [],
+                        images: p.images.map((image) => ({ image })),
                       })
                     }
                     className="mr-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full hover:bg-ink-10"
@@ -144,9 +148,9 @@ export default function AdminProducts() {
             <p className="mb-4 text-h6">
               {draft.id ? "Editar produto" : "Novo produto"}
             </p>
-            {(["slug", "name", "cat"] as const).map((f) => (
+            {(["name", "cat"] as const).map((f) => (
               <label key={f} className="mb-3 block text-body capitalize">
-                {f === "name" ? "nome" : f === "cat" ? "categoria" : f}
+                {f === "name" ? "nome" : "categoria"}
                 <input
                   value={draft[f]}
                   onChange={(e) => setDraft({ ...draft, [f]: e.target.value })}
@@ -166,16 +170,21 @@ export default function AdminProducts() {
             </label>
             <div className="mb-3">
               <ImageUploader
-                existing={existingImages}
-                pending={draft.images}
+                items={draft.images}
                 onAddFiles={(files) =>
-                  setDraft({ ...draft, images: [...draft.images, ...files] })
+                  setDraft({
+                    ...draft,
+                    images: [...draft.images, ...files.map((file) => ({ file }))],
+                  })
                 }
-                onRemovePending={(i) =>
+                onRemove={(i) =>
                   setDraft({
                     ...draft,
                     images: draft.images.filter((_, idx) => idx !== i),
                   })
+                }
+                onReorder={(from, to) =>
+                  setDraft({ ...draft, images: move(draft.images, from, to) })
                 }
                 onDeleteExisting={(imageId) =>
                   draft.id &&

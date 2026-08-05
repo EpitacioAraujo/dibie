@@ -57,7 +57,7 @@ export function Testimonials() {
   return (
     <section className="px-6 pt-[140px] md:px-12">
       <Reveal>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-40">
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.22em] text-ink-40">
           Depoimentos
         </p>
       </Reveal>

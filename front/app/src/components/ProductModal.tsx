@@ -40,7 +40,7 @@ export function ProductModal() {
               type="button"
               onClick={closeProduct}
               aria-label="Fechar"
-              className="absolute right-3 top-3 z-10 cursor-pointer p-1 text-[22px] leading-none opacity-60 hover:opacity-100"
+              className="absolute right-3 top-3 z-10 cursor-pointer p-1 text-[1.375rem] leading-none opacity-60 hover:opacity-100"
             >
               ×
             </button>
@@ -67,7 +67,7 @@ export function ProductModal() {
                 className="aspect-[3/2] w-full min-w-0 flex-1 rounded-lg object-cover"
               />
             </div>
-            <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.06em] text-ink-40">
+            <p className="mt-4 font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
               {product.cat}
             </p>
             <div className="mt-1 flex justify-between text-body">

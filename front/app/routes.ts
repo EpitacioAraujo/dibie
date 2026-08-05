@@ -16,6 +16,7 @@ export default [
   route("admin/login", "pages/admin/login.tsx"),
   route("admin", "pages/admin/layout.tsx", [
     index("pages/admin/dashboard.tsx"),
+    route("home", "pages/admin/home/route.tsx"),
     route("products", "pages/admin/products/route.tsx"),
     route("mockups", "pages/admin/mockups/route.tsx"),
     route("orders", "pages/admin/orders.tsx"),

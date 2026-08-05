@@ -5,6 +5,7 @@ export type Product = {
   cat: string;
   img: string;
   images: string[];
+  featured: boolean;
 };
 
 export function formatBRL(v: number) {

@@ -4,7 +4,7 @@ import { Hero } from "./components/Hero";
 import { Testimonials } from "./components/Testimonials";
 import { Reveal } from "../../src/components/ui/Reveal";
 import { ProductRow } from "../../src/components/ProductGrid";
-import { useProducts } from "../../hooks/useProducts";
+import { useFeaturedProducts } from "../../hooks/useProducts";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -64,8 +64,9 @@ const TRUST = [
 ];
 
 export default function Home() {
-  const { products } = useProducts();
-  const featured = (products ?? []).slice(0, 5);
+  // A API já devolve só os destaques, na ordem definida no admin (máx. 5).
+  const { products } = useFeaturedProducts();
+  const featured = products ?? [];
   return (
     <>
       <Hero />
@@ -73,7 +74,7 @@ export default function Home() {
       {/* Seção 1: intro da dibiê (bloco único) */}
       <section className="grid gap-6 px-6 pt-[100px] pb-[70px] md:grid-cols-2 md:gap-8 md:px-12">
         <Reveal>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-40">
+          <p className="font-mono text-[0.625rem] uppercase tracking-[0.22em] text-ink-40">
             A dibiê
           </p>
         </Reveal>
@@ -88,7 +89,14 @@ export default function Home() {
       {/* Seção 2: produtos em destaque (por linha, stagger por card) */}
       <section className="px-6 pt-16 md:px-12">
         <ProductRow products={featured.slice(0, 3)} cols={3} />
-        <ProductRow products={featured.slice(3, 5)} cols={2} />
+        {featured.length > 3 && (
+          // Os 2 cards grandes só fazem sentido com os 5 slots preenchidos;
+          // com 4 destaques o último vira um card normal em vez de gigante.
+          <ProductRow
+            products={featured.slice(3, 5)}
+            cols={featured.length >= 5 ? 2 : 3}
+          />
+        )}
         <Reveal className="flex justify-center">
           <Link
             to="/pecas"
@@ -151,12 +159,6 @@ export default function Home() {
             lembranças de festa, canecas de equipe — decidimos levar a dibiê
             para todo mundo.
           </p>
-          <a
-            href="#"
-            className="text-body underline underline-offset-4 hover:opacity-70"
-          >
-            Sobre a dibiê →
-          </a>
         </Reveal>
         <Reveal
           as="img"
@@ -179,9 +181,10 @@ export default function Home() {
             onSubmit={(e) => e.preventDefault()}
           >
             <input
-              type="email"
-              placeholder="Seu e-mail"
-              aria-label="Seu e-mail"
+              type="tel"
+              inputMode="tel"
+              placeholder="Seu WhatsApp"
+              aria-label="Seu WhatsApp"
               className="min-w-0 flex-1 border-none bg-transparent outline-none"
             />
             <button

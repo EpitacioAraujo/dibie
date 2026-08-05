@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { animate, cubicBezier } from "animejs";
 import { useUI } from "../../../stores/ui";
+import { useHero, type HeroApiItem, type HeroLane } from "../../../hooks/useHero";
 import { prefersReducedMotion } from "../../../lib/motion";
 import "./hero.css";
 
@@ -8,6 +9,8 @@ const milo = cubicBezier(0.44, 0, 0.56, 1);
 const INTRO_SEEN = "dibie-intro-seen";
 const ZOOM_MS = 1200;
 
+/* Os arrays abaixo são o fallback: valem no primeiro paint (o site é pré-renderizado)
+   e sempre que a API de hero não responder. O admin sobrescreve pelo /api/hero. */
 const TILES = {
   top: [
     { src: "/img/tile-01.webp", delay: 1.1 },
@@ -60,7 +63,49 @@ const DRIFT = {
   bottom: { from: 5, to: -6.5, dur: 7500 },
 };
 
+type Tile = { src: string; delay: number };
+
+/** Junta o conteúdo vindo da API com o fallback local, faixa por faixa. */
+function useHeroContent() {
+  const remote = useHero();
+
+  const pick = <T,>(
+    l: HeroLane,
+    map: (i: HeroApiItem, n: number) => T,
+    fallback: T[],
+  ) => {
+    const rows = (remote ?? []).filter((i) => i.lane === l);
+    return rows.length ? rows.map(map) : fallback;
+  };
+
+  // ponytail: o delay do stagger sai da posição — nunca foi editável mesmo.
+  const tile = (i: HeroApiItem, n: number): Tile => ({
+    src: i.image_url,
+    delay: 0.5 + (n % 5) * 0.25,
+  });
+
+  return {
+    tiles: {
+      top: pick("top", tile, TILES.top),
+      midLeft: pick("midLeft", tile, TILES.midLeft),
+      midRight: pick("midRight", tile, TILES.midRight),
+      bottom: pick("bottom", tile, TILES.bottom),
+    },
+    slides: pick(
+      "slide",
+      (i) => ({
+        src: i.image_url,
+        alt: i.alt ?? "",
+        title: i.title ?? "",
+        sub: i.sub ?? "",
+      }),
+      SLIDES,
+    ),
+  };
+}
+
 export function Hero() {
+  const { tiles, slides } = useHeroContent();
   const setIntroPhase = useUI((s) => s.setIntroPhase);
   const introPhase = useUI((s) => s.introPhase);
   const booted = useUI((s) => s.booted);
@@ -260,7 +305,7 @@ export function Hero() {
   useEffect(() => {
     if (!ready) return;
     const id = window.setInterval(
-      () => setCurrent((c) => (c + 1) % SLIDES.length),
+      () => setCurrent((c) => (c + 1) % slides.length),
       5000
     );
     return () => window.clearInterval(id);
@@ -273,7 +318,7 @@ export function Hero() {
       <div className="hero-mosaic">
         <div className="hero-mosaic-row" data-row="top" ref={topRowRef}>
           <div className="mosaic-track" ref={topTrackRef}>
-            {TILES.top.map((t, i) => (
+            {tiles.top.map((t, i) => (
               <img
                 key={i}
                 className="mosaic-tile"
@@ -287,7 +332,7 @@ export function Hero() {
 
         <div className="hero-mosaic-row" data-row="mid">
           <div className="mosaic-track" ref={midTrackRef}>
-            {TILES.midLeft.map((t, i) => (
+            {tiles.midLeft.map((t, i) => (
               <img
                 key={`l${i}`}
                 className="mosaic-tile"
@@ -297,7 +342,7 @@ export function Hero() {
               />
             ))}
             <div className="mosaic-spacer" ref={spacerRef} />
-            {TILES.midRight.map((t, i) => (
+            {tiles.midRight.map((t, i) => (
               <img
                 key={`r${i}`}
                 className="mosaic-tile"
@@ -309,7 +354,7 @@ export function Hero() {
           </div>
 
           <div className="hero-frame" ref={frameRef}>
-            {SLIDES.map((sl, i) => (
+            {slides.map((sl, i) => (
               <div
                 key={i}
                 className={`hero-slide${i === current ? " active" : ""}`}
@@ -320,7 +365,7 @@ export function Hero() {
             <div className={`hero-shade${on ? " on" : ""}`} />
             <div className={`hero-caption${on ? " on" : ""}`}>
               <div className="hero-caption-slides">
-                {SLIDES.map((sl, i) => (
+                {slides.map((sl, i) => (
                   <div
                     key={i}
                     className={`caption${i === current ? " active" : ""}`}
@@ -331,7 +376,7 @@ export function Hero() {
                 ))}
               </div>
               <div className="hero-dots">
-                {SLIDES.map((_, i) => (
+                {slides.map((_, i) => (
                   <button
                     key={i}
                     className={`dot${i === current ? " active" : ""}`}
@@ -346,7 +391,7 @@ export function Hero() {
 
         <div className="hero-mosaic-row" data-row="bottom" ref={bottomRowRef}>
           <div className="mosaic-track" ref={bottomTrackRef}>
-            {TILES.bottom.map((t, i) => (
+            {tiles.bottom.map((t, i) => (
               <img
                 key={i}
                 className="mosaic-tile"

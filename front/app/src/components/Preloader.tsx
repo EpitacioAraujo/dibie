@@ -51,12 +51,12 @@ export function Preloader() {
       aria-hidden
     >
       <div className="flex items-end justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-40">
+        <span className="font-mono text-[0.625rem] uppercase tracking-[0.22em] text-ink-40">
           dibiê — carregando
         </span>
         <span
           className="font-semibold leading-none tracking-[-0.04em]"
-          style={{ fontSize: "clamp(64px, 14vw, 180px)" }}
+          style={{ fontSize: "clamp(4rem, 14vw, 11.25rem)" }}
         >
           {count}
           <span className="text-ink-40">%</span>

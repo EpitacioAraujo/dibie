@@ -63,7 +63,7 @@ export function CartDrawer() {
             type="button"
             onClick={closeDrawer}
             aria-label="Fechar"
-            className="cursor-pointer p-1 text-[22px] leading-none opacity-60 hover:opacity-100"
+            className="cursor-pointer p-1 text-[1.375rem] leading-none opacity-60 hover:opacity-100"
           >
             ×
           </button>

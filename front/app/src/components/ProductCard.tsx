@@ -18,7 +18,7 @@ export function ProductCard({ product }: { product: Product }) {
         <span className="font-semibold">{product.name}</span>
         <span className="text-ink-40">{formatBRL(product.price)}</span>
       </div>
-      <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.06em] text-ink-40">
+      <p className="mt-1 font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
         {product.cat}
       </p>
     </button>

@@ -12,6 +12,8 @@ export type AdminProduct = {
   image_url: string | null;
   images: AdminProductImage[];
   active: boolean;
+  featured: boolean;
+  position: number;
 };
 
 const KEY = ["admin-products"];
@@ -42,6 +44,16 @@ export function useAdminProducts() {
     onSuccess: invalidate,
   });
 
+  /** Quais produtos aparecem na home e em que ordem. */
+  const saveFeatured = useMutation({
+    mutationFn: (items: { id: number; featured: boolean; position: number }[]) =>
+      apiFetch<AdminProduct[]>("/api/admin/products-featured", {
+        method: "PATCH",
+        body: JSON.stringify({ items }),
+      }),
+    onSuccess: invalidate,
+  });
+
   const remove = useMutation({
     mutationFn: (id: number) =>
       apiFetch(`/api/admin/products/${id}`, { method: "DELETE" }),
@@ -61,6 +73,7 @@ export function useAdminProducts() {
     products: query.data ?? [],
     create,
     update,
+    saveFeatured,
     remove,
     deleteImage,
   };

@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { ApiError, apiFetch } from "../src/clients/laravel/config/client";
+import { apiFetch } from "../src/clients/laravel/config/client";
+import { apiMessage } from "../lib/apiMessage";
 
 export type MockupQuality = "low" | "medium" | "high";
 
@@ -14,10 +15,5 @@ export function useMockupRender() {
   });
 }
 
-export function mockupErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    const data = error.data as { message?: string } | string;
-    if (typeof data === "object" && data?.message) return data.message;
-  }
-  return "Falha ao gerar a imagem. Tente de novo.";
-}
+export const mockupErrorMessage = (error: unknown) =>
+  apiMessage(error, "Falha ao gerar a imagem. Tente de novo.");

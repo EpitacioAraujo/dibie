@@ -5,7 +5,10 @@ import {
   useMockupRender,
   type MockupQuality,
 } from "../../../hooks/useMockupRender";
+import { move } from "../../../lib/move";
+import { CameraIcon, SparklesIcon } from "../../../src/components/ui/icons";
 import { VIEW_AZIMUTHS, type MugView } from "./mug-geometry";
+import { ShotList, type Shot } from "./components/ShotList";
 import {
   MUG_DEFAULTS,
   MugStage,
@@ -44,6 +47,15 @@ const PRESERVE =
 const buildPrompt = (scene: string) =>
   `Turn this 3D render into a photorealistic product photograph of a ceramic mug ${scene}. ${PRESERVE}`;
 
+const MAX_IMAGES = 4; // mesmo teto do ProductController
+
+const EMPTY_FORM = { name: "", price: "", cat: "", active: true };
+
+async function toFile(dataUrl: string, i: number) {
+  const blob = await (await fetch(dataUrl)).blob();
+  return new File([blob], `mockup-${i + 1}.png`, { type: "image/png" });
+}
+
 const DEFAULTS: MugSettings = {
   artUrl: null,
   mugColor: "#ffffff",
@@ -62,14 +74,22 @@ export default function AdminMockups() {
   const [preset, setPreset] = useState(PRESETS[0].scene);
   const [quality, setQuality] = useState<MockupQuality>("medium");
   const [customScene, setCustomScene] = useState("");
-  const [shot, setShot] = useState<string | null>(null); // render 3D cru
-  const [photo, setPhoto] = useState<string | null>(null); // versão fotorrealista
+  const [shots, setShots] = useState<Shot[]>([]); // renders 3D crus
+  const [gens, setGens] = useState<Shot[]>([]); // versões fotorrealistas
+  const [source, setSource] = useState(0); // print que alimenta a IA
+  const [mode, setMode] = useState<"new" | "existing">("new");
+  const [form, setForm] = useState(EMPTY_FORM);
   const [productId, setProductId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
 
-  const { products, update } = useAdminProducts();
+  const { products, create, update } = useAdminProducts();
   const render = useMockupRender();
+
+  const picked = [...shots, ...gens].filter((s) => s.picked);
+  const target = products.find((p) => String(p.id) === productId);
+  const room = MAX_IMAGES - (mode === "existing" ? (target?.images.length ?? 0) : 0);
+  const busy = create.isPending || update.isPending;
 
   const set = <K extends keyof MugSettings>(key: K, value: MugSettings[K]) =>
     setSettings((s) => ({ ...s, [key]: value }));
@@ -87,70 +107,110 @@ export default function AdminMockups() {
   function shoot() {
     const dataUrl = stage.current?.capture();
     if (!dataUrl) return;
-    setShot(dataUrl);
-    setPhoto(null);
-    setSaved(false);
+    setShots((s) => [...s, { url: dataUrl, picked: false }]);
+    setSource(shots.length); // o novo print vira a fonte da IA
     setError(null);
   }
 
   async function photorealize() {
-    if (!shot) return;
+    const from = shots[source];
+    if (!from) return;
     setError(null);
     try {
-      setPhoto(
-        await render.mutateAsync({
-          image: shot,
-          prompt: buildPrompt(customScene.trim() || preset),
-          quality,
-        }),
-      );
-      setSaved(false);
+      const image = await render.mutateAsync({
+        image: from.url,
+        prompt: buildPrompt(customScene.trim() || preset),
+        quality,
+      });
+      setGens((g) => [...g, { url: image, picked: true }]);
     } catch (e) {
       setError(mockupErrorMessage(e));
     }
   }
 
-  /** Salva a imagem escolhida como imagem do produto, pelo upload que já existe. */
-  async function saveToProduct(dataUrl: string) {
-    const product = products.find((p) => String(p.id) === productId);
-    if (!product) return;
+  /** Remove um item da lista, mantendo o print selecionado apontando para o certo. */
+  function removeShot(i: number) {
+    setShots((s) => s.filter((_, idx) => idx !== i));
+    setSource((cur) => (i < cur ? cur - 1 : cur === i ? 0 : cur));
+  }
+
+  const toggle =
+    (setList: typeof setShots) => (i: number) =>
+      setList((l) => l.map((s, idx) => (idx === i ? { ...s, picked: !s.picked } : s)));
+
+  /** Anexa as imagens marcadas a um produto novo ou existente. */
+  async function submit() {
+    if (!picked.length) return;
     setError(null);
+    setDone(null);
     try {
-      const blob = await (await fetch(dataUrl)).blob();
       const fd = new FormData();
-      // O update valida esses campos como obrigatórios — reenvia sem alterar.
-      fd.append("slug", product.slug);
-      fd.append("name", product.name);
-      fd.append("price", String(product.price));
-      fd.append("cat", product.cat);
-      fd.append("active", product.active ? "1" : "0");
-      fd.append("images[]", new File([blob], "mockup.png", { type: "image/png" }));
-      await update.mutateAsync({ id: product.id, body: fd });
-      setSaved(true);
+      const files = await Promise.all(picked.map((s, i) => toFile(s.url, i)));
+      files.forEach((f) => fd.append("images[]", f));
+
+      if (mode === "existing") {
+        if (!target) return;
+        // O update valida esses campos como obrigatórios — reenvia sem alterar.
+        // O slug fica de fora: sem ele o backend mantém o código atual.
+        fd.append("name", target.name);
+        fd.append("price", String(target.price));
+        fd.append("cat", target.cat);
+        fd.append("active", target.active ? "1" : "0");
+        await update.mutateAsync({ id: target.id, body: fd });
+        setDone(`imagens adicionadas a ${target.name} ✓`);
+        return;
+      }
+
+      // Sem slug: o código de 8 caracteres vem do backend.
+      fd.append("name", form.name);
+      fd.append("price", form.price);
+      fd.append("cat", form.cat);
+      fd.append("active", form.active ? "1" : "0");
+      // Sem guardar o id: todo clique é sempre um POST novo, e o formulário fica
+      // preenchido para o próximo item da coleção.
+      const created = await create.mutateAsync(fd);
+      setDone(`cadastrado como ${created.slug} ✓`);
     } catch (e) {
       setError(mockupErrorMessage(e));
     }
+  }
+
+  function clearAll() {
+    setSettings(DEFAULTS);
+    setShots([]);
+    setGens([]);
+    setSource(0);
+    setForm(EMPTY_FORM);
+    setProductId("");
+    setCustomScene("");
+    setError(null);
+    setDone(null);
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-h4">Mockups</h1>
+    // A tela toda cabe na viewport: 4rem = o p-8 do <main> do layout admin.
+    <div className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden max-lg:h-auto max-lg:overflow-visible">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
+        <h1 className="text-h6">Mockups</h1>
         <p className="text-body text-ink-40">
           suba a arte, escolha o ângulo, fotografe e gere a foto realista
         </p>
       </div>
 
       {error && (
-        <p className="mb-4 rounded-md bg-wine/10 px-4 py-3 text-body text-wine">{error}</p>
+        <p className="mb-2 shrink-0 rounded-md bg-wine/10 px-4 py-2 text-body text-wine">
+          {error}
+        </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      {/* a linha precisa ser 1fr definido: senão ela cresce com o conteúdo e o
+          overflow-hidden do container corta em vez das colunas rolarem */}
+      <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[240px_minmax(0,1fr)_320px] lg:grid-rows-[minmax(0,1fr)]">
         {/* ---- Controles ---- */}
-        <div className="flex flex-col gap-5">
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
           <div>
-            <p className="mb-2 text-body text-ink-40">Arte</p>
-            <label className="flex cursor-pointer items-center justify-center rounded-md border border-dashed border-ink-10 px-4 py-6 text-body text-ink-40 hover:bg-ink-5">
+            <p className="mb-1 text-body text-ink-40">Arte</p>
+            <label className="flex cursor-pointer items-center justify-center rounded-md border border-dashed border-ink-10 px-3 py-3 text-body text-ink-40 hover:bg-ink-5">
               {settings.artUrl ? "trocar arte" : "escolher arquivo"}
               <input
                 type="file"
@@ -179,7 +239,7 @@ export default function AdminMockups() {
           </div>
 
           <div>
-            <p className="mb-2 text-body text-ink-40">
+            <p className="mb-1 text-body text-ink-40">
               Caneca (cm) — ⌀ {(settings.circumference / Math.PI).toFixed(1)}
             </p>
             <div className="flex gap-3">
@@ -201,7 +261,7 @@ export default function AdminMockups() {
           </div>
 
           <div>
-            <p className="mb-2 text-body text-ink-40">Área de impressão (cm)</p>
+            <p className="mb-1 text-body text-ink-40">Área de impressão (cm)</p>
             <div className="flex gap-3">
               <NumberField
                 label="largura"
@@ -241,8 +301,8 @@ export default function AdminMockups() {
           <Slider label="Rotação" min={-180} max={180} step={1} value={settings.rotation} onChange={(v) => set("rotation", v)} unit="°" />
 
           <div>
-            <p className="mb-2 text-body text-ink-40">Ângulo da câmera</p>
-            <div className="mb-3 flex gap-2">
+            <p className="mb-1 text-body text-ink-40">Ângulo da câmera</p>
+            <div className="mb-2 flex gap-2">
               {(["front", "three-quarter", "side"] as MugView[]).map((v, i) => (
                 <button
                   key={v}
@@ -278,8 +338,51 @@ export default function AdminMockups() {
             />
           </div>
 
+        </div>
+
+        {/* ---- Caneca: quadrada (o capture é 1:1), dimensionada pela altura livre ---- */}
+        <div className="flex min-h-0 items-center justify-center max-lg:aspect-square">
+          <div className="aspect-square h-full max-w-full overflow-hidden rounded-2xl border border-ink-10 bg-bg">
+            <MugStage ref={stage} settings={settings} onError={onStageError} />
+          </div>
+        </div>
+
+        {/* ---- Prints, IA e destino ---- */}
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+          <ShotList
+            label="Prints do 3D"
+            items={shots}
+            addIcon={<CameraIcon />}
+            addTitle="fotografar este ângulo"
+            onAdd={shoot}
+            onRemove={removeShot}
+            onToggle={toggle(setShots)}
+            onReorder={(from, to) => {
+              setShots((s) => move(s, from, to));
+              setSource((cur) => (cur === from ? to : cur));
+            }}
+            selected={source}
+            onSelect={setSource}
+          />
+          <ShotList
+            label={
+              render.isPending
+                ? "Fotos realistas (IA) — gerando… (~20s)"
+                : "Fotos realistas (IA)"
+            }
+            items={gens}
+            addIcon={<SparklesIcon />}
+            addTitle="fotorrealizar o print selecionado"
+            busy={render.isPending}
+            disabled={!shots[source]}
+            onAdd={photorealize}
+            onRemove={(i) => setGens((g) => g.filter((_, idx) => idx !== i))}
+            onToggle={toggle(setGens)}
+            onReorder={(from, to) => setGens((g) => move(g, from, to))}
+          />
+
           <div>
-            <p className="mb-2 text-body text-ink-40">Cenário</p>
+            <p className="mb-1 text-body text-ink-40">Cenário</p>
             <select
               value={preset}
               onChange={(e) => setPreset(e.target.value)}
@@ -300,7 +403,7 @@ export default function AdminMockups() {
           </div>
 
           <div>
-            <p className="mb-2 text-body text-ink-40">Qualidade da geração</p>
+            <p className="mb-1 text-body text-ink-40">Qualidade da geração</p>
             <select
               value={quality}
               onChange={(e) => setQuality(e.target.value as MockupQuality)}
@@ -313,98 +416,114 @@ export default function AdminMockups() {
               ))}
             </select>
           </div>
-        </div>
 
-        {/* ---- Viewport + resultado ---- */}
-        <div className="flex flex-col gap-4">
-          <div className="aspect-square w-full overflow-hidden rounded-2xl border border-ink-10 bg-bg">
-            <MugStage ref={stage} settings={settings} onError={onStageError} />
-          </div>
-
-          <button
-            type="button"
-            onClick={shoot}
-            className="cursor-pointer self-start rounded-full bg-ink px-5 py-2 text-body text-white"
-          >
-            fotografar este ângulo
-          </button>
-
-          {shot && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Result title="render 3D" src={shot} onSave={() => saveToProduct(shot)} canSave={!!productId} saving={update.isPending} />
-              <div>
-                <p className="mb-2 text-body text-ink-40">foto realista (IA)</p>
-                {photo ? (
-                  <Result title={null} src={photo} onSave={() => saveToProduct(photo)} canSave={!!productId} saving={update.isPending} />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={photorealize}
-                    disabled={render.isPending}
-                    className="flex aspect-square w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-ink-10 text-body text-ink-40 hover:bg-ink-5 disabled:cursor-wait"
-                  >
-                    {render.isPending ? "gerando… (~20s)" : "fotorrealizar"}
-                  </button>
-                )}
-              </div>
+          {/* ---- Destino das imagens marcadas ---- */}
+          <div className="border-t border-ink-10 pt-3">
+            <div className="mb-3 flex gap-2">
+              {(["new", "existing"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    setMode(m);
+                    setDone(null);
+                  }}
+                  className={`cursor-pointer rounded-full border px-3 py-1 text-body ${
+                    mode === m
+                      ? "border-ink bg-ink text-white"
+                      : "border-ink-10 hover:bg-ink-5"
+                  }`}
+                >
+                  {m === "new" ? "cadastrar produto" : "associar a um produto"}
+                </button>
+              ))}
             </div>
-          )}
 
-          {shot && (
-            <div className="flex items-center gap-3">
+            {mode === "new" ? (
+              <div className="flex flex-col gap-2">
+                {(["name", "cat"] as const).map((f) => (
+                  <label key={f} className="block text-body text-ink-40">
+                    {f === "name" ? "nome" : "categoria"}
+                    <input
+                      value={form[f]}
+                      onChange={(e) => setForm({ ...form, [f]: e.target.value })}
+                      className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-1.5 text-ink outline-none"
+                    />
+                  </label>
+                ))}
+                <label className="block text-body text-ink-40">
+                  preço
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-1.5 text-ink outline-none"
+                  />
+                </label>
+              </div>
+            ) : (
               <select
                 value={productId}
                 onChange={(e) => {
                   setProductId(e.target.value);
-                  setSaved(false);
+                  setDone(null);
                 }}
-                className="cursor-pointer rounded-md border border-ink-10 bg-bg px-3 py-2 text-body"
+                className="w-full cursor-pointer rounded-md border border-ink-10 bg-bg px-3 py-2 text-body"
               >
-                <option value="">salvar em qual produto?</option>
+                <option value="">escolha o produto</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} ({p.images.length}/4)
+                    {p.name} ({p.images.length}/{MAX_IMAGES})
                   </option>
                 ))}
               </select>
-              {saved && <span className="text-body text-ink-40">salvo ✓</span>}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+            )}
 
-function Result({
-  title,
-  src,
-  onSave,
-  canSave,
-  saving,
-}: {
-  title: string | null;
-  src: string;
-  onSave: () => void;
-  canSave: boolean;
-  saving: boolean;
-}) {
-  return (
-    <div>
-      {title && <p className="mb-2 text-body text-ink-40">{title}</p>}
-      <img src={src} alt="" className="aspect-square w-full rounded-lg object-cover" />
-      <div className="mt-2 flex gap-3 text-body">
-        <a href={src} download="mockup.png" className="cursor-pointer underline">
-          baixar
-        </a>
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!canSave || saving}
-          className="cursor-pointer underline disabled:cursor-default disabled:text-ink-40 disabled:no-underline"
-        >
-          {saving ? "salvando…" : "usar no produto"}
-        </button>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {mode === "new" && (
+                <label className="flex items-center gap-2 text-body">
+                  <input
+                    type="checkbox"
+                    checked={form.active}
+                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                  />
+                  ativo
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={submit}
+                disabled={
+                  busy ||
+                  !picked.length ||
+                  picked.length > room ||
+                  (mode === "new" ? !form.name.trim() : !target)
+                }
+                className="cursor-pointer rounded-full bg-ink px-5 py-2 text-body text-white disabled:cursor-default disabled:opacity-50"
+              >
+                {busy
+                  ? "salvando…"
+                  : mode === "new"
+                    ? "cadastrar"
+                    : "adicionar ao produto"}
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="cursor-pointer rounded-full border border-ink-10 px-5 py-2 text-body hover:bg-ink-5"
+              >
+                limpar
+              </button>
+            </div>
+            <p className="mt-2 text-body text-ink-40">
+              {done ??
+                (picked.length > room
+                  ? `${picked.length} marcadas, cabem ${room}`
+                  : `${picked.length} imagem(ns) marcada(s)`)}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

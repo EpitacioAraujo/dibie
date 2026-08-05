@@ -14,6 +14,9 @@ import "./app.css";
 const queryClient = new QueryClient();
 
 export const links: Route.LinksFunction = () => [
+  // passarinho recortado do logo por viewBox — sem fundo, escala em qualquer tamanho
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  { rel: "apple-touch-icon", href: "/favicon.svg" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
