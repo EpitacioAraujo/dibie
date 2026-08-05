@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 const NAV = [
   { to: "/admin", label: "Painel", perm: null },
   { to: "/admin/products", label: "Produtos", perm: "products.view" },
+  { to: "/admin/mockups", label: "Mockups", perm: "products.update" },
   { to: "/admin/orders", label: "Pedidos", perm: "orders.view" },
   { to: "/admin/users", label: "Usuários", perm: "users.view" },
   { to: "/admin/roles", label: "Perfis", perm: "roles.view" },
