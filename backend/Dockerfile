@@ -18,5 +18,6 @@ COPY . .
 # ponytail: COPY . . invalida cache a cada mudança de fonte; separar composer.json
 #   e usar --no-scripts+dump-autoload otimiza o build se ele ficar lento.
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+RUN php artisan storage:link
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
