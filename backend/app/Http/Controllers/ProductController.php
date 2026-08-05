@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -36,5 +37,23 @@ class ProductController extends Controller
     public function show(string $slug)
     {
         return Product::with('images')->where('slug', $slug)->where('active', true)->firstOrFail();
+    }
+
+    /**
+     * A arte estampada na caneca 3D. Sai por aqui, e não pelo /storage, porque o
+     * three.js desenha essa imagem num canvas: sem os cabeçalhos CORS que só o
+     * /api/* recebe, o canvas fica tainted e o WebGL recusa a textura.
+     */
+    public function art(string $slug)
+    {
+        $product = Product::where('slug', $slug)->where('active', true)->firstOrFail();
+
+        abort_unless(isset($product->mockup['art']), 404);
+
+        // A URL é estável, mas o arquivo troca quando o admin sobe outra arte:
+        // cache curto, nada de immutable.
+        return Storage::disk('public')->response($product->mockup['art'], headers: [
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 }

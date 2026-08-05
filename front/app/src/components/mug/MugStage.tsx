@@ -10,7 +10,7 @@ import {
   viewDirection,
   WRAP_W,
   type MugView,
-} from "../mug-geometry";
+} from "./mug-geometry";
 
 export type { MugView };
 
@@ -90,7 +90,8 @@ export function MugStage({
   onError,
 }: {
   settings: MugSettings;
-  ref: Ref<MugStageHandle>;
+  /** Só o editor precisa: no site o cliente apenas gira a caneca. */
+  ref?: Ref<MugStageHandle>;
   onError: (message: string) => void;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -265,6 +266,10 @@ export function MugStage({
 
     let cancelled = false;
     const img = new Image();
+    // Sem isto o canvas fica tainted ao desenhar arte de outra origem e o WebGL
+    // recusa a textura — a caneca renderiza branca. A rota /api/.../art manda os
+    // cabeçalhos; em blob: (o editor) o atributo é ignorado.
+    img.crossOrigin = "anonymous";
     img.onload = () => {
       if (cancelled) return;
       artRef.current = img;

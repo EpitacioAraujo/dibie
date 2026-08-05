@@ -18,6 +18,8 @@ Route::post('auth/login', [AuthController::class, 'login']);
 Route::get('products', [ProductController::class, 'index']);
 Route::get('categories', [ProductController::class, 'categories']);
 Route::get('products/{slug}', [ProductController::class, 'show']);
+// A arte da caneca 3D vem por aqui para herdar o CORS do /api/* (ver o método art).
+Route::get('products/{slug}/art', [ProductController::class, 'art']);
 Route::get('hero', [HeroController::class, 'index']);
 Route::post('orders', [OrderController::class, 'store']);
 

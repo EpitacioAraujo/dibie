@@ -24,6 +24,7 @@ class ProductController extends Controller
         $data['slug'] ??= Product::generateSlug();
         $product = Product::create($data);
         $this->applyOrder($request, $product, $this->storeImages($request, $product));
+        $this->storeMockup($request, $product);
 
         return response()->json($product->load('images'), 201);
     }
@@ -39,6 +40,7 @@ class ProductController extends Controller
         // Sem slug no payload o produto mantém o código que já tem.
         $product->update(array_filter($data, fn ($v, $k) => $k !== 'slug' || $v !== null, ARRAY_FILTER_USE_BOTH));
         $this->applyOrder($request, $product, $this->storeImages($request, $product));
+        $this->storeMockup($request, $product);
 
         return $product->load('images');
     }
@@ -67,6 +69,9 @@ class ProductController extends Controller
     {
         foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->path);
+        }
+        if (isset($product->mockup['art'])) {
+            Storage::disk('public')->delete($product->mockup['art']);
         }
         $product->delete();
 
@@ -130,6 +135,59 @@ class ProductController extends Controller
         }
 
         return $created;
+    }
+
+    /**
+     * Guarda a caneca 3D do produto: a arte estampada (arquivo `art`) e as medidas
+     * da cena (`mockup`, JSON). É o que o site remonta no visualizador do cliente.
+     */
+    private function storeMockup(Request $request, Product $product): void
+    {
+        if (!$request->has('mockup')) {
+            return;
+        }
+
+        // `image` recusa AVIF/HEIC, que o navegador desenha numa boa: a lista aqui
+        // é o que o <img> do site consegue mostrar. SVG fica de fora de propósito
+        // (é servido do nosso domínio e pode carregar script).
+        $request->validate([
+            'mockup' => ['json'],
+            'art' => ['nullable', 'file', 'max:4096', 'mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif'],
+        ], [
+            'art.mimetypes' => 'A arte precisa ser JPG, PNG, GIF, WEBP, AVIF ou HEIC.',
+            'art.max' => 'A arte precisa ter no máximo 4 MB.',
+        ]);
+
+        // Esses números viram parâmetros de render no navegador do cliente: valem
+        // os mesmos limites dos controles do editor, nem um a mais.
+        $settings = validator(json_decode($request->input('mockup'), true) ?? [], [
+            'mugColor' => ['required', 'string', 'regex:/^#[0-9a-f]{6}$/i'],
+            'handleColor' => ['required', 'string', 'regex:/^#[0-9a-f]{6}$/i'],
+            'circumference' => ['required', 'numeric', 'between:10,60'],
+            'height' => ['required', 'numeric', 'between:4,30'],
+            'artWidth' => ['required', 'numeric', 'between:1,60'],
+            'artHeight' => ['required', 'numeric', 'between:1,60'],
+            'offsetX' => ['required', 'numeric', 'between:-30,30'],
+            'offsetY' => ['required', 'numeric', 'between:-30,30'],
+            'rotation' => ['required', 'numeric', 'between:-180,180'],
+            'azimuth' => ['required', 'numeric', 'between:-180,-60'],
+            'elevation' => ['required', 'numeric', 'between:0,70'],
+        ])->validate();
+
+        // Sem arquivo novo a arte atual continua valendo — dá para reajustar só as
+        // medidas sem reenviar a imagem.
+        $art = $product->mockup['art'] ?? null;
+
+        if ($file = $request->file('art')) {
+            if ($art) {
+                Storage::disk('public')->delete($art);
+            }
+            $art = $file->store('mockups', 'public');
+        }
+
+        abort_if($art === null, 422, 'Envie a arte da caneca junto da configuração 3D.');
+
+        $product->update(['mockup' => $settings + ['art' => $art]]);
     }
 
     /**

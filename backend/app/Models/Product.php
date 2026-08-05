@@ -8,15 +8,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['slug', 'name', 'price', 'cat', 'active', 'featured', 'position'];
+    protected $fillable = ['slug', 'name', 'price', 'cat', 'active', 'featured', 'position', 'mockup'];
 
     protected $casts = [
         'price' => 'decimal:2',
         'active' => 'boolean',
         'featured' => 'boolean',
+        'mockup' => 'array',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'mockup_art_url'];
 
     /** Alfabeto sem 0/o/1/l/i: o código é para ser lido e digitado por gente. */
     private const ALPHABET = '23456789abcdefghjkmnpqrstuvwxyz';
@@ -43,5 +44,17 @@ class Product extends Model
     protected function imageUrl(): Attribute
     {
         return Attribute::get(fn () => $this->images->first()?->image_url);
+    }
+
+    /**
+     * URL da arte estampada na caneca 3D. O JSON guarda só o path: URL absoluta
+     * no banco quebraria ao trocar de domínio. Aponta para a rota de API, não
+     * para o /storage, porque o three.js precisa dos cabeçalhos CORS de lá.
+     */
+    protected function mockupArtUrl(): Attribute
+    {
+        return Attribute::get(fn () => isset($this->mockup['art'])
+            ? url("/api/products/{$this->slug}/art")
+            : null);
     }
 }

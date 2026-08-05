@@ -18,7 +18,7 @@ import {
   VIEW_AZIMUTHS,
   viewDirection,
   type MugView,
-} from "../app/pages/admin/mockups/mug-geometry.ts";
+} from "../app/src/components/mug/mug-geometry.ts";
 
 const file = process.argv[2] ?? "public/models/mug.glb";
 const bytes = readFileSync(file);

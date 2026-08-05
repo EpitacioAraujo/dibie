@@ -7,14 +7,14 @@ import {
 } from "../../../hooks/useMockupRender";
 import { move } from "../../../lib/move";
 import { CameraIcon, SparklesIcon } from "../../../src/components/ui/icons";
-import { VIEW_AZIMUTHS, type MugView } from "./mug-geometry";
+import { VIEW_AZIMUTHS, type MugView } from "../../../src/components/mug/mug-geometry";
 import { ShotList, type Shot } from "./components/ShotList";
 import {
   MUG_DEFAULTS,
   MugStage,
   type MugSettings,
   type MugStageHandle,
-} from "./components/MugStage";
+} from "../../../src/components/mug/MugStage";
 
 // O custo por imagem varia ~30x entre os níveis. Itere no rascunho e só gere
 // em "final" a versão que vai para o catálogo.
@@ -56,6 +56,43 @@ async function toFile(dataUrl: string, i: number) {
   return new File([blob], `mockup-${i + 1}.png`, { type: "image/png" });
 }
 
+/** Lado maior do PNG gerado a partir de um SVG — a textura da caneca tem 2048px. */
+const RASTER = 2048;
+
+/**
+ * Converte SVG em PNG antes de subir. Dois motivos: SVG é XML e, servido do
+ * nosso domínio, roda script; e o navegador rasteriza a estampa de qualquer
+ * jeito, então nada se perde. Outros formatos passam direto.
+ */
+async function rasterize(file: File): Promise<File> {
+  if (file.type !== "image/svg+xml") return file;
+
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+
+    // Vetor: rasteriza no tamanho da textura, não no tamanho nominal do arquivo.
+    const scale = RASTER / Math.max(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((done) =>
+      canvas.toBlob(done, "image/png"),
+    );
+    if (!blob) throw new Error("canvas vazio");
+
+    return new File([blob], file.name.replace(/\.svg$/i, "") + ".png", {
+      type: "image/png",
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 const DEFAULTS: MugSettings = {
   artUrl: null,
   mugColor: "#ffffff",
@@ -71,6 +108,9 @@ const DEFAULTS: MugSettings = {
 export default function AdminMockups() {
   const stage = useRef<MugStageHandle>(null);
   const [settings, setSettings] = useState<MugSettings>(DEFAULTS);
+  // O arquivo em si, além do object URL: é ele que vai para o servidor e vira a
+  // caneca 3D que o cliente gira no site.
+  const [artFile, setArtFile] = useState<File | null>(null);
   const [preset, setPreset] = useState(PRESETS[0].scene);
   const [quality, setQuality] = useState<MockupQuality>("medium");
   const [customScene, setCustomScene] = useState("");
@@ -140,13 +180,21 @@ export default function AdminMockups() {
 
   /** Anexa as imagens marcadas a um produto novo ou existente. */
   async function submit() {
-    if (!picked.length) return;
+    if (!picked.length && !artFile) return;
     setError(null);
     setDone(null);
     try {
       const fd = new FormData();
       const files = await Promise.all(picked.map((s, i) => toFile(s.url, i)));
       files.forEach((f) => fd.append("images[]", f));
+
+      // A arte + as medidas viram a caneca 3D do produto. artUrl fica de fora: é
+      // um object URL local, sem serventia no servidor.
+      if (artFile) {
+        const { artUrl: _, ...scene } = settings;
+        fd.append("art", artFile);
+        fd.append("mockup", JSON.stringify(scene));
+      }
 
       if (mode === "existing") {
         if (!target) return;
@@ -177,6 +225,7 @@ export default function AdminMockups() {
 
   function clearAll() {
     setSettings(DEFAULTS);
+    setArtFile(null);
     setShots([]);
     setGens([]);
     setSource(0);
@@ -216,10 +265,20 @@ export default function AdminMockups() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0];
-                  if (file) set("artUrl", URL.createObjectURL(file));
-                  e.target.value = "";
+                  e.target.value = ""; // antes do await: o input some do evento depois
+                  if (!file) return;
+                  try {
+                    // O preview usa o mesmo arquivo que vai subir: o que você vê
+                    // na caneca é exatamente o que o cliente vai ver.
+                    const art = await rasterize(file);
+                    set("artUrl", URL.createObjectURL(art));
+                    setArtFile(art);
+                    setError(null);
+                  } catch {
+                    setError("Não foi possível ler essa arte. Tente um PNG ou JPG.");
+                  }
                 }}
               />
             </label>
@@ -496,7 +555,7 @@ export default function AdminMockups() {
                 onClick={submit}
                 disabled={
                   busy ||
-                  !picked.length ||
+                  (!picked.length && !artFile) ||
                   picked.length > room ||
                   (mode === "new" ? !form.name.trim() : !target)
                 }
@@ -520,7 +579,9 @@ export default function AdminMockups() {
               {done ??
                 (picked.length > room
                   ? `${picked.length} marcadas, cabem ${room}`
-                  : `${picked.length} imagem(ns) marcada(s)`)}
+                  : `${picked.length} imagem(ns) marcada(s)${
+                      artFile ? " + caneca 3D" : ""
+                    }`)}
             </p>
           </div>
         </div>

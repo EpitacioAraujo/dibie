@@ -1,9 +1,17 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useUI } from "../../stores/ui";
 import { useCart } from "../../stores/cart";
 import { formatBRL } from "../types/product";
 import { Overlay } from "./ui/Overlay";
 import { QtyStepper } from "./ui/QtyStepper";
+
+// three + o loader de .glb passam de 600 KB: só baixa quando o cliente pede o 3D.
+const MugStage = lazy(() =>
+  import("./mug/MugStage").then((m) => ({ default: m.MugStage })),
+);
+
+/** Índice reservado para a vista 3D na tira de miniaturas. */
+const VIEW_3D = -1;
 
 export function ProductModal() {
   const product = useUI((s) => s.activeProduct);
@@ -12,11 +20,13 @@ export function ProductModal() {
   const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [mugError, setMugError] = useState<string | null>(null);
 
   // reseta quantidade e imagem em destaque a cada produto aberto
   useEffect(() => {
     setQty(1);
     setActiveImage(0);
+    setMugError(null);
   }, [product]);
 
   const open = !!product;
@@ -45,7 +55,7 @@ export function ProductModal() {
               ×
             </button>
             <div className="flex flex-col gap-3 md:flex-row md:gap-4">
-              {product.images.length > 1 && (
+              {(product.images.length > 1 || product.mockup) && (
                 <div className="flex gap-2 overflow-x-auto md:w-16 md:flex-shrink-0 md:flex-col md:overflow-visible">
                   {product.images.map((src, i) => (
                     <button
@@ -59,13 +69,45 @@ export function ProductModal() {
                       <img src={src} alt="" className="h-full w-full object-cover" />
                     </button>
                   ))}
+                  {product.mockup && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveImage(VIEW_3D)}
+                      className={`aspect-square w-14 flex-shrink-0 cursor-pointer rounded border border-ink-10 font-mono text-[0.625rem] uppercase tracking-[0.06em] md:w-full ${
+                        activeImage === VIEW_3D ? "ring-2 ring-ink" : "opacity-60"
+                      }`}
+                    >
+                      3D
+                    </button>
+                  )}
                 </div>
               )}
-              <img
-                src={product.images[activeImage] ?? product.img}
-                alt={product.name}
-                className="aspect-[3/2] w-full min-w-0 flex-1 rounded-lg object-cover"
-              />
+              {activeImage === VIEW_3D && product.mockup ? (
+                <div className="aspect-[3/2] w-full min-w-0 flex-1 overflow-hidden rounded-lg bg-bg">
+                  {mugError ? (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-body text-ink-40">
+                      {mugError}
+                    </div>
+                  ) : (
+                    <Suspense
+                      fallback={
+                        <div className="flex h-full items-center justify-center text-body text-ink-40">
+                          carregando 3D…
+                        </div>
+                      }
+                    >
+                      {/* sem ref: aqui ninguém fotografa, o cliente só gira */}
+                      <MugStage settings={product.mockup} onError={setMugError} />
+                    </Suspense>
+                  )}
+                </div>
+              ) : (
+                <img
+                  src={product.images[activeImage] ?? product.img}
+                  alt={product.name}
+                  className="aspect-[3/2] w-full min-w-0 flex-1 rounded-lg object-cover"
+                />
+              )}
             </div>
             <p className="mt-4 font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
               {product.cat}

@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../src/clients/laravel/config/client";
+import type { MugSettings } from "../src/components/mug/MugStage";
 import type { Product } from "../src/types/product";
 
 type ApiProduct = {
@@ -10,6 +11,8 @@ type ApiProduct = {
   image_url: string;
   images: { image_url: string }[];
   featured: boolean;
+  mockup: Omit<MugSettings, "artUrl"> | null;
+  mockup_art_url: string | null;
 };
 
 /** Resposta paginada do Laravel. */
@@ -28,6 +31,8 @@ const toProduct = (r: ApiProduct): Product => ({
   img: r.image_url,
   images: r.images.map((i) => i.image_url),
   featured: r.featured,
+  // O backend guarda o path da arte separado das medidas; o MugStage quer a URL.
+  mockup: r.mockup ? { ...r.mockup, artUrl: r.mockup_art_url } : null,
 });
 
 /* Produtos buscados da API em runtime (o site é SSG; o grid hidrata e busca). */
