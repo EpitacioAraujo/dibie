@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'replicate' => [
+        'token' => env('REPLICATE_API_TOKEN'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

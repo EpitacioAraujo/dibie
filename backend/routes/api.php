@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\MockupController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -29,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::match(['put', 'patch'], 'products/{product}', [AdminProductController::class, 'update'])->middleware('permission:products.update');
         Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->middleware('permission:products.delete');
         Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->middleware('permission:products.update');
+
+        // Mockups (gerador 3D + IA)
+        Route::post('mockups/render', [MockupController::class, 'render'])->middleware('permission:products.update');
 
         // Pedidos
         Route::get('orders', [AdminOrderController::class, 'index'])->middleware('permission:orders.view');
