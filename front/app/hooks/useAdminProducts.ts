@@ -18,12 +18,37 @@ export type AdminProduct = {
 
 const KEY = ["admin-products"];
 
-export function useAdminProducts() {
+export type AdminProductQuery = {
+  q?: string;
+  cat?: string;
+  sort?: string;
+  dir?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
+};
+
+type Page = { data: AdminProduct[]; total: number; last_page: number };
+
+export function useAdminProducts(params: AdminProductQuery = {}) {
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: KEY,
-    queryFn: () => apiFetch<AdminProduct[]>("/api/admin/products"),
+    queryKey: [...KEY, params],
+    queryFn: () => {
+      const search = new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v !== "" && v !== undefined)
+          .map(([k, v]) => [k, String(v)]),
+      ).toString();
+      // sem per_page o backend devolve a lista inteira; com ele, um paginador
+      return apiFetch<AdminProduct[] | Page>(
+        `/api/admin/products${search ? `?${search}` : ""}`,
+      );
+    },
+    placeholderData: (prev) => prev, // troca de página/filtro não pisca a tabela
   });
+  const data: AdminProduct[] | Page | undefined = query.data;
+  const page = Array.isArray(data) ? undefined : data;
+  const products: AdminProduct[] = (Array.isArray(data) ? data : page?.data) ?? [];
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: KEY });
 
@@ -60,6 +85,11 @@ export function useAdminProducts() {
     onSuccess: invalidate,
   });
 
+  const cats = useQuery({
+    queryKey: ["admin-product-cats"],
+    queryFn: () => apiFetch<string[]>("/api/admin/products-cats"),
+  });
+
   const deleteImage = useMutation({
     mutationFn: ({ productId, imageId }: { productId: number; imageId: number }) =>
       apiFetch(`/api/admin/products/${productId}/images/${imageId}`, {
@@ -70,11 +100,14 @@ export function useAdminProducts() {
 
   return {
     ...query,
-    products: query.data ?? [],
+    products,
+    total: page?.total ?? products.length,
+    lastPage: page?.last_page ?? 1,
     create,
     update,
     saveFeatured,
     remove,
     deleteImage,
+    cats: cats.data ?? [],
   };
 }

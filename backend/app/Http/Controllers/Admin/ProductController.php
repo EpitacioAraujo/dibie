@@ -13,9 +13,35 @@ class ProductController extends Controller
 {
     private const MAX_IMAGES = 4;
 
-    public function index()
+    /** Colunas que o admin pode ordenar. Fora dessa lista o sort é ignorado. */
+    private const SORTABLE = ['id', 'name', 'price', 'cat', 'active'];
+
+    /**
+     * Busca, filtro, ordenação e paginação acontecem aqui. Sem per_page a lista
+     * sai inteira, do jeito que as telas de destaques e mockups esperam.
+     */
+    public function index(Request $request)
     {
-        return Product::with('images')->orderBy('id')->get();
+        // LOWER + LIKE em vez de ILIKE: o app roda em Postgres e os testes em sqlite.
+        $term = '%'.mb_strtolower($request->string('q')).'%';
+        $sort = in_array($request->input('sort'), self::SORTABLE, true) ? $request->input('sort') : 'id';
+        $dir = $request->input('dir') === 'desc' ? 'desc' : 'asc';
+
+        $query = Product::with('images')
+            ->when($request->filled('cat'), fn ($q) => $q->where('cat', $request->string('cat')))
+            ->when($request->filled('q'), fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [$term]))
+            ->orderBy($sort, $dir)
+            ->orderBy('id');
+
+        return $request->filled('per_page')
+            ? $query->paginate(min((int) $request->input('per_page'), 100))
+            : $query->get();
+    }
+
+    /** Categorias em uso, incluindo as de produtos inativos, para o filtro do admin. */
+    public function cats()
+    {
+        return Product::distinct()->orderBy('cat')->pluck('cat');
     }
 
     public function store(Request $request)
@@ -62,7 +88,8 @@ class ProductController extends Controller
             ]);
         }
 
-        return $this->index();
+        // a tela de destaques trabalha com a lista inteira
+        return Product::with('images')->orderBy('id')->get();
     }
 
     public function destroy(Product $product)

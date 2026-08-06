@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
 import { move } from "../../../lib/move";
@@ -16,6 +16,21 @@ type Draft = {
   images: UploaderItem[];
 };
 
+/** Coluna ordenada no momento, ou null quando a ordenação está desativada. */
+type Sort = { col: string; dir: "asc" | "desc" } | null;
+
+const PER_PAGE = 10;
+
+/** Colunas ordenáveis: rótulo → coluna aceita pelo backend. */
+const COLUMNS: [label: string, col: string | null][] = [
+  ["Imagem", null],
+  ["Nome", "name"],
+  ["Slug", null],
+  ["Preço", "price"],
+  ["Categoria", "cat"],
+  ["Ativo", "active"],
+];
+
 const EMPTY: Draft = {
   name: "",
   price: "",
@@ -26,15 +41,54 @@ const EMPTY: Draft = {
 
 export default function AdminProducts() {
   const can = useAuth((s) => s.hasPermission);
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("");
+  const [sort, setSort] = useState<Sort>(null);
+  const [page, setPage] = useState(1);
+
+  // o backend só é consultado quando a digitação para
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setQ(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const {
     products: rows,
+    total,
+    lastPage,
+    cats,
     create,
     update,
     remove: removeProduct,
     deleteImage,
-  } = useAdminProducts();
+  } = useAdminProducts({
+    q,
+    cat,
+    sort: sort?.col,
+    dir: sort?.dir,
+    page,
+    per_page: PER_PAGE,
+  });
   const [draft, setDraft] = useState<Draft | null>(null);
   const busy = create.isPending || update.isPending;
+
+  const start = (page - 1) * PER_PAGE;
+
+  // mesma coluna: asc → desc → desativado. Outra coluna: começa em asc (só uma ordena por vez).
+  function toggleSort(col: string) {
+    setSort((s) =>
+      s?.col !== col
+        ? { col, dir: "asc" }
+        : s.dir === "asc"
+          ? { col, dir: "desc" }
+          : null,
+    );
+    setPage(1);
+  }
 
   async function save() {
     if (!draft) return;
@@ -78,15 +132,67 @@ export default function AdminProducts() {
         )}
       </div>
 
+      <div className="mb-4 flex flex-wrap gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por nome"
+          aria-label="Buscar por nome"
+          className="w-full max-w-[260px] rounded-md border border-ink-10 bg-bg px-3 py-2 text-body outline-none"
+        />
+        <select
+          value={cat}
+          onChange={(e) => {
+            setCat(e.target.value);
+            setPage(1);
+          }}
+          aria-label="Filtrar por categoria"
+          className="cursor-pointer rounded-md border border-ink-10 bg-bg px-3 py-2 text-body outline-none"
+        >
+          <option value="">Todas as categorias</option>
+          {cats.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <table className="w-full border-collapse text-body">
         <thead>
           <tr className="border-b border-ink-10 text-left text-ink-40">
-            <th className="py-2">Imagem</th>
-            <th>Nome</th>
-            <th>Slug</th>
-            <th>Preço</th>
-            <th>Categoria</th>
-            <th>Ativo</th>
+            {COLUMNS.map(([label, col]) => (
+              <th
+                key={label}
+                className="py-2 font-normal"
+                aria-sort={
+                  sort?.col === col && col
+                    ? sort.dir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : undefined
+                }
+              >
+                {col ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleSort(col)}
+                    aria-label={`Ordenar por ${label}`}
+                    className="flex cursor-pointer items-center gap-1 hover:text-ink"
+                  >
+                    {label}
+                    <span
+                      aria-hidden
+                      className={sort?.col === col ? "text-ink" : "opacity-40"}
+                    >
+                      {sort?.col === col ? (sort.dir === "asc" ? "↑" : "↓") : "↕"}
+                    </span>
+                  </button>
+                ) : (
+                  label
+                )}
+              </th>
+            ))}
             <th></th>
           </tr>
         </thead>
@@ -142,8 +248,42 @@ export default function AdminProducts() {
               </td>
             </tr>
           ))}
+          {!rows.length && (
+            <tr>
+              <td colSpan={7} className="py-6 text-center text-ink-40">
+                Nenhum produto encontrado
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
+
+      <div className="mt-4 flex items-center justify-between text-body text-ink-40">
+        <span>
+          {total ? `${start + 1}–${start + rows.length} de ${total}` : "0 produtos"}
+        </span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+            className="cursor-pointer rounded-full px-3 py-1 hover:bg-ink-10 disabled:cursor-default disabled:opacity-40"
+          >
+            anterior
+          </button>
+          <span>
+            {page} / {lastPage}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= lastPage}
+            className="cursor-pointer rounded-full px-3 py-1 hover:bg-ink-10 disabled:cursor-default disabled:opacity-40"
+          >
+            próxima
+          </button>
+        </div>
+      </div>
 
       {draft && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">

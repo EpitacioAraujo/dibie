@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin')->group(function () {
         // Produtos
         Route::get('products', [AdminProductController::class, 'index'])->middleware('permission:products.view');
+        Route::get('products-cats', [AdminProductController::class, 'cats'])->middleware('permission:products.view');
         Route::post('products', [AdminProductController::class, 'store'])->middleware('permission:products.create');
         Route::get('products/{product}', [AdminProductController::class, 'show'])->middleware('permission:products.view');
         Route::match(['put', 'patch'], 'products/{product}', [AdminProductController::class, 'update'])->middleware('permission:products.update');
