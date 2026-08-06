@@ -19,6 +19,7 @@ export default [
     route("home", "pages/admin/home/route.tsx"),
     route("products", "pages/admin/products/route.tsx"),
     route("mockups", "pages/admin/mockups/route.tsx"),
+    route("carga", "pages/admin/carga.tsx"),
     route("orders", "pages/admin/orders.tsx"),
     route("users", "pages/admin/users.tsx"),
     route("roles", "pages/admin/roles.tsx"),

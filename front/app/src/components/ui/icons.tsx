@@ -4,6 +4,7 @@ import {
   Camera,
   Check,
   Download,
+  Eye,
   LogOut,
   Minus,
   MoveHorizontal,
@@ -12,6 +13,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Plus,
+  RotateCcw,
   Sparkles,
   Trash2,
   X,
@@ -43,6 +45,8 @@ export const SidebarCloseIcon = styled(PanelLeftClose);
 export const SidebarOpenIcon = styled(PanelLeftOpen);
 export const MoveHorizontalIcon = styled(MoveHorizontal);
 export const MoveVerticalIcon = styled(MoveVertical);
+export const EyeIcon = styled(Eye);
+export const RetryIcon = styled(RotateCcw);
 
 // As duas marcas ficam à mão: o lucide não distribui logotipos.
 const brand = {
