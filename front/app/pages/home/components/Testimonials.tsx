@@ -1,5 +1,9 @@
 import { useState, type CSSProperties } from "react";
 import { Reveal } from "../../../src/components/ui/Reveal";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+} from "../../../src/components/ui/icons";
 
 const TESTIMONIALS = [
   {
@@ -90,7 +94,7 @@ export function Testimonials() {
               aria-label="Depoimento anterior"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-ink-5 text-body hover:bg-ink-10"
             >
-              ←
+              <ArrowLeftIcon size={18} />
             </button>
             <button
               type="button"
@@ -98,7 +102,7 @@ export function Testimonials() {
               aria-label="Próximo depoimento"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-ink-5 text-body hover:bg-ink-10"
             >
-              →
+              <ArrowRightIcon size={18} />
             </button>
           </div>
         </div>

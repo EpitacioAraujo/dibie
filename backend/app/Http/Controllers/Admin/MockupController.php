@@ -21,8 +21,9 @@ class MockupController extends Controller
     public function render(Request $request)
     {
         $data = $request->validate([
-            // ~7 MB de data URI: cabe no post_max_size padrão do PHP (8M).
-            'image' => ['required', 'string', 'starts_with:data:image/', 'max:7000000'],
+            // O editor captura em 2048px; o data URI cabe no post_max_size=20M
+            // que a imagem do backend configura.
+            'image' => ['required', 'string', 'starts_with:data:image/', 'max:15000000'],
             'prompt' => ['required', 'string', 'max:600'],
             // Muda o custo em ~30x entre low e high: rascunho barato, final caro.
             'quality' => ['nullable', 'in:low,medium,high'],

@@ -9,6 +9,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import type { Route } from "./+types/root";
+import { Toaster } from "./src/components/ui/Toast";
 import "./app.css";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }

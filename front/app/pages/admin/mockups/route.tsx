@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
 import {
   mockupErrorMessage,
@@ -6,12 +6,20 @@ import {
   type MockupQuality,
 } from "../../../hooks/useMockupRender";
 import { move } from "../../../lib/move";
-import { CameraIcon, SparklesIcon } from "../../../src/components/ui/icons";
-import { VIEW_AZIMUTHS, type MugView } from "../../../src/components/mug/mug-geometry";
+import {
+  CameraIcon,
+  MoveHorizontalIcon,
+  MoveVerticalIcon,
+  SparklesIcon,
+} from "../../../src/components/ui/icons";
+import { CurrencyInput } from "../../../src/components/ui/CurrencyInput";
+import { toast } from "../../../src/components/ui/Toast";
+import { WRAP_W } from "../../../src/components/mug/mug-geometry";
 import { ShotList, type Shot } from "./components/ShotList";
 import {
   MUG_DEFAULTS,
   MugStage,
+  ZOOM,
   type MugSettings,
   type MugStageHandle,
 } from "../../../src/components/mug/MugStage";
@@ -56,8 +64,8 @@ async function toFile(dataUrl: string, i: number) {
   return new File([blob], `mockup-${i + 1}.png`, { type: "image/png" });
 }
 
-/** Lado maior do PNG gerado a partir de um SVG — a textura da caneca tem 2048px. */
-const RASTER = 2048;
+/** Lado maior do PNG gerado a partir de um SVG: o da textura, para não perder traço. */
+const RASTER = WRAP_W;
 
 /**
  * Converte SVG em PNG antes de subir. Dois motivos: SVG é XML e, servido do
@@ -101,8 +109,9 @@ const DEFAULTS: MugSettings = {
   offsetX: 0,
   offsetY: 0,
   rotation: 0,
-  azimuth: VIEW_AZIMUTHS["three-quarter"],
-  elevation: 22,
+  rotateX: 0,
+  rotateY: 45,
+  zoom: 100,
 };
 
 export default function AdminMockups() {
@@ -121,7 +130,6 @@ export default function AdminMockups() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [productId, setProductId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<string | null>(null);
 
   const { products, create, update } = useAdminProducts();
   const render = useMockupRender();
@@ -143,6 +151,13 @@ export default function AdminMockups() {
   }, [settings.artUrl]);
 
   const onStageError = useCallback((message: string) => setError(message), []);
+
+  // Mexer na cena é o mesmo que mexer nos inputs: arrasto e roda entram pelo
+  // mesmo estado, então os campos mostram sempre o que está na tela.
+  const onStageChange = useCallback(
+    (patch: Partial<MugSettings>) => setSettings((s) => ({ ...s, ...patch })),
+    [],
+  );
 
   function shoot() {
     const dataUrl = stage.current?.capture();
@@ -182,7 +197,6 @@ export default function AdminMockups() {
   async function submit() {
     if (!picked.length && !artFile) return;
     setError(null);
-    setDone(null);
     try {
       const fd = new FormData();
       const files = await Promise.all(picked.map((s, i) => toFile(s.url, i)));
@@ -205,7 +219,7 @@ export default function AdminMockups() {
         fd.append("cat", target.cat);
         fd.append("active", target.active ? "1" : "0");
         await update.mutateAsync({ id: target.id, body: fd });
-        setDone(`imagens adicionadas a ${target.name} ✓`);
+        toast(`Imagens adicionadas a ${target.name}`);
         return;
       }
 
@@ -217,7 +231,7 @@ export default function AdminMockups() {
       // Sem guardar o id: todo clique é sempre um POST novo, e o formulário fica
       // preenchido para o próximo item da coleção.
       const created = await create.mutateAsync(fd);
-      setDone(`cadastrado como ${created.slug} ✓`);
+      toast(`Produto cadastrado como ${created.slug}`);
     } catch (e) {
       setError(mockupErrorMessage(e));
     }
@@ -233,7 +247,6 @@ export default function AdminMockups() {
     setProductId("");
     setCustomScene("");
     setError(null);
-    setDone(null);
   }
 
   return (
@@ -340,7 +353,7 @@ export default function AdminMockups() {
           </div>
 
           <Slider
-            label="Posição ↔"
+            label={<><MoveHorizontalIcon />Posição</>}
             min={-settings.circumference / 4}
             max={settings.circumference / 4}
             step={0.1}
@@ -349,7 +362,7 @@ export default function AdminMockups() {
             unit=" cm"
           />
           <Slider
-            label="Posição ↕"
+            label={<><MoveVerticalIcon />Posição</>}
             min={-settings.height / 2}
             max={settings.height / 2}
             step={0.1}
@@ -360,49 +373,47 @@ export default function AdminMockups() {
           <Slider label="Rotação" min={-180} max={180} step={1} value={settings.rotation} onChange={(v) => set("rotation", v)} unit="°" />
 
           <div>
-            <p className="mb-1 text-body text-ink-40">Ângulo da câmera</p>
-            <div className="mb-2 flex gap-2">
-              {(["front", "three-quarter", "side"] as MugView[]).map((v, i) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => set("azimuth", VIEW_AZIMUTHS[v])}
-                  className={`cursor-pointer rounded-full border px-3 py-1 text-body ${
-                    settings.azimuth === VIEW_AZIMUTHS[v]
-                      ? "border-ink bg-ink text-white"
-                      : "border-ink-10 hover:bg-ink-5"
-                  }`}
-                >
-                  {["frente", "3/4", "lateral"][i]}
-                </button>
-              ))}
+            <p className="mb-1 text-body text-ink-40">
+              Giro (°) e zoom — arraste e role o mouse na caneca
+            </p>
+            <div className="flex gap-3">
+              <NumberField
+                label="x"
+                value={settings.rotateX}
+                min={0}
+                max={360}
+                step={1}
+                onChange={(v) => set("rotateX", Math.round(v))}
+              />
+              <NumberField
+                label="y"
+                value={settings.rotateY}
+                min={0}
+                max={360}
+                step={1}
+                onChange={(v) => set("rotateY", Math.round(v))}
+              />
+              <NumberField
+                label="zoom %"
+                value={settings.zoom}
+                min={ZOOM.min}
+                max={ZOOM.max}
+                step={5}
+                onChange={(v) => set("zoom", Math.round(v))}
+              />
             </div>
-            <Slider
-              label="Giro (alça)"
-              min={-180}
-              max={-60}
-              step={1}
-              value={settings.azimuth}
-              onChange={(v) => set("azimuth", v)}
-              unit="°"
-            />
-            <Slider
-              label="Altura da vista"
-              min={0}
-              max={70}
-              step={1}
-              value={settings.elevation}
-              onChange={(v) => set("elevation", v)}
-              unit="°"
-            />
           </div>
-
         </div>
 
         {/* ---- Caneca: quadrada (o capture é 1:1), dimensionada pela altura livre ---- */}
         <div className="flex min-h-0 items-center justify-center max-lg:aspect-square">
           <div className="aspect-square h-full max-w-full overflow-hidden rounded-2xl border border-ink-10 bg-bg">
-            <MugStage ref={stage} settings={settings} onError={onStageError} />
+            <MugStage
+              ref={stage}
+              settings={settings}
+              onError={onStageError}
+              onChange={onStageChange}
+            />
           </div>
         </div>
 
@@ -483,10 +494,7 @@ export default function AdminMockups() {
                 <button
                   key={m}
                   type="button"
-                  onClick={() => {
-                    setMode(m);
-                    setDone(null);
-                  }}
+                  onClick={() => setMode(m)}
                   className={`cursor-pointer rounded-full border px-3 py-1 text-body ${
                     mode === m
                       ? "border-ink bg-ink text-white"
@@ -512,11 +520,9 @@ export default function AdminMockups() {
                 ))}
                 <label className="block text-body text-ink-40">
                   preço
-                  <input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    onChange={(v) => setForm({ ...form, price: v })}
                     className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-1.5 text-ink outline-none"
                   />
                 </label>
@@ -524,10 +530,7 @@ export default function AdminMockups() {
             ) : (
               <select
                 value={productId}
-                onChange={(e) => {
-                  setProductId(e.target.value);
-                  setDone(null);
-                }}
+                onChange={(e) => setProductId(e.target.value)}
                 className="w-full cursor-pointer rounded-md border border-ink-10 bg-bg px-3 py-2 text-body"
               >
                 <option value="">escolha o produto</option>
@@ -576,12 +579,11 @@ export default function AdminMockups() {
               </button>
             </div>
             <p className="mt-2 text-body text-ink-40">
-              {done ??
-                (picked.length > room
-                  ? `${picked.length} marcadas, cabem ${room}`
-                  : `${picked.length} imagem(ns) marcada(s)${
-                      artFile ? " + caneca 3D" : ""
-                    }`)}
+              {picked.length > room
+                ? `${picked.length} marcadas, cabem ${room}`
+                : `${picked.length} imagem(ns) marcada(s)${
+                    artFile ? " + caneca 3D" : ""
+                  }`}
             </p>
           </div>
         </div>
@@ -617,12 +619,14 @@ function NumberField({
   value,
   min,
   max,
+  step = 0.1,
   onChange,
 }: {
   label: string;
   value: number;
   min: number;
   max: number;
+  step?: number;
   onChange: (v: number) => void;
 }) {
   return (
@@ -633,7 +637,7 @@ function NumberField({
         value={value}
         min={min}
         max={max}
-        step={0.1}
+        step={step}
         onChange={(e) => {
           const v = Number(e.target.value);
           if (v >= min && v <= max) onChange(v);
@@ -651,7 +655,7 @@ function Slider({
   unit = "",
   ...range
 }: {
-  label: string;
+  label: ReactNode;
   value: number;
   onChange: (v: number) => void;
   unit?: string;
@@ -662,7 +666,7 @@ function Slider({
   return (
     <label className="block text-body text-ink-40">
       <span className="flex justify-between">
-        {label}
+        <span className="flex items-center gap-1">{label}</span>
         <span>
           {value}
           {unit}

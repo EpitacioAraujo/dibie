@@ -4,6 +4,7 @@ import { useAdminUsers } from "../../hooks/useAdminUsers";
 import { useAdminRoles } from "../../hooks/useAdminRoles";
 import { usePermissionsCatalog } from "../../hooks/usePermissionsCatalog";
 import { PencilIcon, TrashIcon } from "../../src/components/ui/icons";
+import { toast } from "../../src/components/ui/Toast";
 
 type Draft = {
   id?: number;
@@ -52,6 +53,7 @@ export default function AdminUsers() {
     if (draft.password) body.password = draft.password;
     if (draft.id) await update.mutateAsync({ id: draft.id, body });
     else await create.mutateAsync(body);
+    toast(draft.id ? "Usuário atualizado" : "Usuário cadastrado");
     setDraft(null);
   }
 

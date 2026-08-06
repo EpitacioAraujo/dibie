@@ -3,6 +3,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useAdminRoles } from "../../hooks/useAdminRoles";
 import { usePermissionsCatalog } from "../../hooks/usePermissionsCatalog";
 import { PencilIcon, TrashIcon } from "../../src/components/ui/icons";
+import { toast } from "../../src/components/ui/Toast";
 
 type Draft = { id?: number; name: string; permissions: string[] };
 
@@ -28,6 +29,7 @@ export default function AdminRoles() {
     const body = { name: draft.name, permissions: draft.permissions };
     if (draft.id) await update.mutateAsync({ id: draft.id, body });
     else await create.mutateAsync(body);
+    toast(draft.id ? "Perfil atualizado" : "Perfil cadastrado");
     setDraft(null);
   }
 

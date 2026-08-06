@@ -1,10 +1,16 @@
 import * as THREE from "three";
 
+/**
+ * Largura do canvas da estampa. A altura sai da proporção real da caneca.
+ * 4096 para uma caneca de 26,5 cm dá ~155 px/cm: a área de impressão fica com
+ * ~3200 px, então arte de 2000-3000 px entra sem ser reduzida — reduzir no
+ * canvas 2D é o que borrava texto fino no render.
+ */
+export const WRAP_W = 4096;
 // Cantos reservados de cor chapada, para onde a UV manda alça e interior — que
 // não podem receber estampa. Ficam na base do canvas, fora da área de arte.
-export const PATCH = 24;
-/** Largura do canvas da estampa. A altura sai da proporção real da caneca. */
-export const WRAP_W = 2048;
+// Proporcional à largura: em px absolutos, o mipmap misturaria a arte neles.
+export const PATCH = Math.round(WRAP_W * 0.012);
 export const HANDLE_UV = [PATCH / 2 / WRAP_W, 0.002];
 export const INSIDE_UV = [1 - PATCH / 2 / WRAP_W, 0.002];
 
@@ -69,6 +75,10 @@ export function reprojectMugUV(root: THREE.Object3D) {
   const normalMatrix = new THREE.Matrix3();
 
   for (const mesh of meshes) {
+    // Sem índice, cada triângulo tem vértices só seus — é o que permite
+    // consertar a emenda sem arrastar os vizinhos junto (ver healSeam).
+    if (mesh.geometry.index) mesh.geometry = mesh.geometry.toNonIndexed();
+
     const geometry = mesh.geometry;
     const position = geometry.attributes.position;
     const normals = geometry.attributes.normal;
@@ -104,10 +114,31 @@ export function reprojectMugUV(root: THREE.Object3D) {
       uv[i * 2 + 1] = (point.y - box.min.y) / height;
     }
 
+    healSeam(uv);
     geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
   }
 
   return { circumference: 2 * Math.PI * radius, height, handleAngle, center, base: box.min.y };
+}
+
+/**
+ * Fecha a volta da estampa nos triângulos da emenda, atrás da alça.
+ *
+ * Lá o u de um vértice é ~1 e o do vizinho é ~0: interpolando, o triângulo
+ * varre a textura inteira ao contrário em poucos milímetros e vira uma faixa
+ * com as cores das bordas da arte. Mandar os vértices baixos para além de 1
+ * faz a volta seguir em frente — a textura precisa de wrapS = RepeatWrapping
+ * para amostrar isso como continuação.
+ */
+function healSeam(uv: Float32Array) {
+  for (let t = 0; t + 5 < uv.length; t += 6) {
+    const us = [uv[t], uv[t + 2], uv[t + 4]];
+    // Meia volta de diferença dentro de um triângulo só existe na emenda.
+    if (Math.max(...us) - Math.min(...us) <= 0.5) continue;
+    for (let k = 0; k < 3; k++) {
+      if (us[k] < 0.5) uv[t + k * 2] = us[k] + 1;
+    }
+  }
 }
 
 /**
@@ -139,6 +170,14 @@ export const VIEW_AZIMUTHS: Record<MugView, number> = {
 
 /** Quanto de folga deixar em volta da caneca. 1 = ela preenche o quadro. */
 export const FRAMING = 2;
+
+/**
+ * A câmera fica parada olhando de frente para a caneca — quem gira é o objeto
+ * (os 3 eixos do editor). Fica em +Z de propósito: assim os eixos do mundo são
+ * os da tela (x = horizontal, y = vertical, z = profundidade) e girar em x/y/z
+ * é girar no que se vê. Um pouco de elevação dá volume ao produto.
+ */
+export const FIXED_VIEW = { azimuth: 90, elevation: 18 };
 
 /**
  * Direção da câmera em relação ao alvo. A alça aponta para +X depois de

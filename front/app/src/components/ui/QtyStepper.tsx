@@ -1,3 +1,5 @@
+import { MinusIcon, PlusIcon } from "./icons";
+
 export function QtyStepper({
   value,
   onDec,
@@ -13,18 +15,18 @@ export function QtyStepper({
         type="button"
         onClick={onDec}
         aria-label="Diminuir"
-        className="h-7 w-7 cursor-pointer rounded-full hover:bg-ink-10"
+        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full hover:bg-ink-10"
       >
-        −
+        <MinusIcon size={14} />
       </button>
       <span className="min-w-[20px] text-center">{value}</span>
       <button
         type="button"
         onClick={onInc}
         aria-label="Aumentar"
-        className="h-7 w-7 cursor-pointer rounded-full hover:bg-ink-10"
+        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full hover:bg-ink-10"
       >
-        +
+        <PlusIcon size={14} />
       </button>
     </div>
   );

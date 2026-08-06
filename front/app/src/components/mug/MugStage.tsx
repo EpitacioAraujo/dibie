@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
+  FIXED_VIEW,
   FRAMING,
   normalizeMugPose,
   PATCH,
@@ -37,30 +38,47 @@ export type MugSettings = {
   offsetX: number;
   offsetY: number;
   rotation: number;
-  /** Câmera, em graus: giro ao redor da caneca e altura do ponto de vista. */
-  azimuth: number;
-  elevation: number;
+  /** Giro da caneca nos eixos da tela, em graus (0 a 360). A câmera fica parada. */
+  rotateX: number;
+  rotateY: number;
+  /** Aproximação da câmera em %, onde 100 é o enquadramento padrão. */
+  zoom: number;
 };
 
+/** Limites do zoom, em %. O backend valida a mesma faixa. */
+export const ZOOM = { min: 50, max: 300 };
+
 export type MugStageHandle = {
-  /** Renderiza e devolve o frame atual como data URI PNG. */
+  /** Renderiza e devolve o frame atual como data URI PNG quadrado. */
   capture: (size?: number) => string;
 };
 
 
 
 
+// Mockup gravado antes dos eixos x/y/zoom não traz esses campos, e NaN na
+// rotação some com a caneca. O padrão aqui é o mesmo do editor.
+const deg = (graus: number | undefined) => THREE.MathUtils.degToRad(graus ?? 0);
+const pct = (zoom: number | undefined) => (zoom || 100) / 100;
+
 /** Redesenha a estampa: fundo na cor da caneca + arte na área de impressão. */
 function paintWrap(canvas: HTMLCanvasElement, art: HTMLImageElement | null, s: MugSettings) {
+  // A largura vem do canvas, não de WRAP_W: em GPU que não chega a 4096 ela é
+  // reduzida no mount, e todo o resto tem que acompanhar.
+  const wrapW = canvas.width;
   // 1 px quadrado no mundo: a arte não distorce ao enrolar.
-  const pxPerCm = WRAP_W / s.circumference;
+  const pxPerCm = wrapW / s.circumference;
   const wrapH = Math.max(1, Math.round(s.height * pxPerCm));
   if (canvas.height !== wrapH) canvas.height = wrapH;
 
   const ctx = canvas.getContext("2d")!;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // Vale para o drawImage da arte: sem isto o navegador reamostra no vizinho
+  // mais próximo e serrilha traço fino e texto pequeno.
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.fillStyle = s.mugColor;
-  ctx.fillRect(0, 0, WRAP_W, wrapH);
+  ctx.fillRect(0, 0, wrapW, wrapH);
 
   if (art) {
     // A arte cabe dentro da área de impressão preservando a proporção dela.
@@ -71,7 +89,7 @@ function paintWrap(canvas: HTMLCanvasElement, art: HTMLImageElement | null, s: M
     const height = art.height * fit;
 
     ctx.save();
-    ctx.translate(WRAP_W / 2 + s.offsetX * pxPerCm, wrapH / 2 - s.offsetY * pxPerCm);
+    ctx.translate(wrapW / 2 + s.offsetX * pxPerCm, wrapH / 2 - s.offsetY * pxPerCm);
     ctx.rotate((s.rotation * Math.PI) / 180);
     ctx.drawImage(art, -width / 2, -height / 2, width, height);
     ctx.restore();
@@ -81,18 +99,25 @@ function paintWrap(canvas: HTMLCanvasElement, art: HTMLImageElement | null, s: M
   ctx.fillStyle = s.handleColor;
   ctx.fillRect(0, wrapH - PATCH, PATCH, PATCH);
   ctx.fillStyle = s.mugColor;
-  ctx.fillRect(WRAP_W - PATCH, wrapH - PATCH, PATCH, PATCH);
+  ctx.fillRect(wrapW - PATCH, wrapH - PATCH, PATCH, PATCH);
 }
 
 export function MugStage({
   settings,
   ref,
   onError,
+  onChange,
 }: {
   settings: MugSettings;
   /** Só o editor precisa: no site o cliente apenas gira a caneca. */
   ref?: Ref<MugStageHandle>;
   onError: (message: string) => void;
+  /**
+   * Só o editor passa isto: a câmera fica parada, arrastar gira o objeto e a
+   * roda dá zoom — tudo devolvido aqui para os inputs numéricos acompanharem.
+   * Sem isto (site público) o mouse orbita a câmera, como sempre foi.
+   */
+  onChange?: (patch: Partial<Pick<MugSettings, "rotateX" | "rotateY" | "zoom">>) => void;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   // Guarda o que os efeitos de settings precisam mexer sem recriar a cena.
@@ -104,12 +129,16 @@ export function MugStage({
     wrap: HTMLCanvasElement;
     texture: THREE.CanvasTexture;
     model: THREE.Object3D | null;
+    /** Nó que recebe o giro do usuário, com origem no centro da caneca. */
+    spin: THREE.Object3D | null;
     /** Medidas do .glb como veio, em cm — base para escalar às do usuário. */
     nominal: { circumference: number; height: number };
   } | null>(null);
   const artRef = useRef<HTMLImageElement | null>(null);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   /** Redesenha a estampa e reajusta as medidas. Estável: lê tudo de refs. */
   const repaint = useCallback(() => {
@@ -120,28 +149,39 @@ export function MugStage({
     paintWrap(s.wrap, artRef.current, settings);
     s.texture.needsUpdate = true;
 
-    if (s.model) {
+    if (s.model && s.spin) {
       const radial = settings.circumference / s.nominal.circumference;
       s.model.scale.set(radial, settings.height / s.nominal.height, radial);
+      // A caneca gira em torno do próprio centro, não da base: o nó de giro
+      // fica na meia altura e o modelo desce a mesma medida dentro dele.
+      s.model.position.y = -settings.height / 2;
+      s.spin.position.y = settings.height / 2;
+      s.spin.rotation.set(deg(settings.rotateX), deg(settings.rotateY), 0);
       s.controls.target.set(0, settings.height / 2, 0);
-      s.controls.minDistance = settings.height;
-      s.controls.maxDistance = settings.height * 6;
       s.controls.update();
     }
   }, []);
 
-  /** Põe a câmera num dos ângulos, a uma distância que enquadra a caneca. */
+  /** Põe a câmera parada de frente, à distância que o zoom pede. */
   const placeCamera = (
     camera: THREE.PerspectiveCamera,
     controls: OrbitControls,
-    s: MugSettings,
+    dims: { height: number; circumference: number; zoom: number },
   ) => {
-    const extent = Math.max(s.height, s.circumference / Math.PI) * FRAMING;
-    const distance = extent / 2 / Math.tan((camera.fov * Math.PI) / 360);
-    controls.target.set(0, s.height / 2, 0);
+    const extent = Math.max(dims.height, dims.circumference / Math.PI) * FRAMING;
+    // Distância do enquadramento padrão (zoom 100%); o zoom é o divisor dela.
+    const framed = extent / 2 / Math.tan((camera.fov * Math.PI) / 360);
+    // Os limites da órbita são a própria faixa de zoom: assim o update() do
+    // OrbitControls nunca puxa a câmera de volta de onde o zoom a colocou.
+    controls.minDistance = framed / (ZOOM.max / 100);
+    controls.maxDistance = framed / (ZOOM.min / 100);
+    controls.target.set(0, dims.height / 2, 0);
     camera.position
       .copy(controls.target)
-      .addScaledVector(viewDirection(s.azimuth, s.elevation), distance);
+      .addScaledVector(
+        viewDirection(FIXED_VIEW.azimuth, FIXED_VIEW.elevation),
+        framed / pct(dims.zoom),
+      );
     controls.update();
   };
 
@@ -157,6 +197,15 @@ export function MugStage({
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // O tamanho na tela é do CSS, nunca do buffer: os setSize() abaixo passam
+    // updateStyle=false para o capture() poder renderizar em 2048 sem mexer no
+    // layout — sem isto o canvas ocuparia buffer/1 px e, em tela com dpr 2 ou 3,
+    // sairia duas a três vezes maior que a caixa, cortado e fora de centro.
+    Object.assign(renderer.domElement.style, {
+      display: "block",
+      width: "100%",
+      height: "100%",
+    });
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -166,6 +215,54 @@ export function MugStage({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     placeCamera(camera, controls, settingsRef.current);
+
+    // No editor a câmera é fixa: o arrasto gira o objeto e a roda dá zoom —
+    // os dois entram pelo estado, para os inputs mostrarem sempre o que se vê.
+    let onDown: ((e: PointerEvent) => void) | null = null;
+    let onMove: ((e: PointerEvent) => void) | null = null;
+    let onUp: ((e: PointerEvent) => void) | null = null;
+    let onWheel: ((e: WheelEvent) => void) | null = null;
+    if (onChangeRef.current) {
+      controls.enableRotate = false;
+      controls.enableZoom = false;
+      const DEG_PER_PX = 0.5;
+      const WHEEL_STEP = 1.1; // ~10% por clique da roda
+      const wrap360 = (v: number) => ((v % 360) + 360) % 360;
+      let last: { x: number; y: number } | null = null;
+
+      onDown = (e) => {
+        last = { x: e.clientX, y: e.clientY };
+        renderer.domElement.setPointerCapture(e.pointerId);
+      };
+      onMove = (e) => {
+        if (!last) return;
+        const dx = e.clientX - last.x;
+        const dy = e.clientY - last.y;
+        last = { x: e.clientX, y: e.clientY };
+        const s = settingsRef.current;
+        // A face de frente acompanha o mouse: arrastar para a direita gira em
+        // anti-horário visto de cima (+y), e para cima afasta o topo da câmera
+        // (-x). Como os eixos do mundo são os da tela, é só somar o arrasto.
+        onChangeRef.current?.({
+          rotateX: Math.round(wrap360(s.rotateX + dy * DEG_PER_PX)),
+          rotateY: Math.round(wrap360(s.rotateY + dx * DEG_PER_PX)),
+        });
+      };
+      onUp = () => (last = null);
+      onWheel = (e) => {
+        e.preventDefault();
+        const zoom = settingsRef.current.zoom * (e.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP);
+        onChangeRef.current?.({
+          zoom: Math.round(THREE.MathUtils.clamp(zoom, ZOOM.min, ZOOM.max)),
+        });
+      };
+
+      renderer.domElement.addEventListener("pointerdown", onDown);
+      renderer.domElement.addEventListener("pointermove", onMove);
+      renderer.domElement.addEventListener("pointerup", onUp);
+      renderer.domElement.addEventListener("pointercancel", onUp);
+      renderer.domElement.addEventListener("wheel", onWheel, { passive: false });
+    }
 
     // Luz de estúdio simples: ambiente + key + fill + rim.
     scene.add(new THREE.HemisphereLight(0xffffff, 0xb9b2a8, 1.5));
@@ -180,9 +277,13 @@ export function MugStage({
     scene.add(rim);
 
     const wrap = document.createElement("canvas");
-    wrap.width = WRAP_W;
+    // Textura maior que o limite da GPU não sobe, e a caneca sairia sem estampa.
+    wrap.width = Math.min(WRAP_W, renderer.capabilities.maxTextureSize);
     const texture = new THREE.CanvasTexture(wrap);
     texture.colorSpace = THREE.SRGBColorSpace;
+    // A UV da emenda passa de 1 para fechar a volta: sem repetir, o clamp
+    // esticaria o último texel ali (ver healSeam).
+    texture.wrapS = THREE.RepeatWrapping;
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
     const state = {
@@ -193,6 +294,7 @@ export function MugStage({
       wrap,
       texture,
       model: null as THREE.Object3D | null,
+      spin: null as THREE.Object3D | null,
       nominal: {
         circumference: MUG_DEFAULTS.circumference,
         height: MUG_DEFAULTS.height,
@@ -206,6 +308,11 @@ export function MugStage({
         const measures = reprojectMugUV(gltf.scene);
         state.nominal = measures;
         state.model = normalizeMugPose(gltf.scene, measures);
+        // normalizeMugPose deixa a alça em +X, ou seja, a arte em -X. Mais 90°
+        // põem a arte de frente para a câmera, que agora olha de +Z.
+        state.model.rotation.y += Math.PI / 2;
+        state.spin = new THREE.Group();
+        state.spin.add(state.model);
 
         // Toda malha usa a mesma textura: as cores da caneca e da alça são
         // pintadas no canvas, então os materiais ficam neutros.
@@ -221,7 +328,7 @@ export function MugStage({
         });
 
         repaint();
-        scene.add(state.model);
+        scene.add(state.spin);
       },
       undefined,
       () => onError("Não foi possível carregar /models/mug.glb."),
@@ -248,6 +355,13 @@ export function MugStage({
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      if (onDown) renderer.domElement.removeEventListener("pointerdown", onDown);
+      if (onMove) renderer.domElement.removeEventListener("pointermove", onMove);
+      if (onUp) {
+        renderer.domElement.removeEventListener("pointerup", onUp);
+        renderer.domElement.removeEventListener("pointercancel", onUp);
+      }
+      if (onWheel) renderer.domElement.removeEventListener("wheel", onWheel);
       controls.dispose();
       state.texture.dispose();
       renderer.dispose();
@@ -286,16 +400,17 @@ export function MugStage({
   // Qualquer mudança de medida, cor ou posição só precisa redesenhar a estampa.
   useEffect(repaint, [settings, repaint]);
 
-  // Ângulos e medidas movem a câmera. Arrastar com o mouse continua livre — os
-  // sliders só reposicionam quando você mexe neles.
+  // Mudou de tamanho ou de zoom: reposiciona a câmera parada.
   useEffect(() => {
     const s = sceneRef.current;
     if (s) placeCamera(s.camera, s.controls, settingsRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.azimuth, settings.elevation, settings.height, settings.circumference]);
+  }, [settings.height, settings.circumference, settings.zoom]);
 
   useImperativeHandle(ref, () => ({
-    capture(size = 1024) {
+    // 2048: é o print que vai para o catálogo e alimenta a IA — mais pixels
+    // aqui é o que segura o texto da estampa legível.
+    capture(size = 2048) {
       const s = sceneRef.current;
       if (!s) return "";
       // Renderiza quadrado em alta resolução, depois devolve ao tamanho do canvas.
@@ -315,5 +430,10 @@ export function MugStage({
     },
   }));
 
-  return <div ref={mountRef} className="h-full w-full" />;
+  return (
+    <div
+      ref={mountRef}
+      className={`h-full w-full ${onChange ? "cursor-grab active:cursor-grabbing" : ""}`}
+    />
+  );
 }

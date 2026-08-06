@@ -5,6 +5,7 @@ import { WHATSAPP } from "../../lib/config";
 import { useCreateOrder } from "../../hooks/useOrders";
 import { Overlay } from "./ui/Overlay";
 import { QtyStepper } from "./ui/QtyStepper";
+import { CloseIcon } from "./ui/icons";
 
 async function checkout(items: CartItem[], createOrder: (p: {
   total: number;
@@ -63,9 +64,9 @@ export function CartDrawer() {
             type="button"
             onClick={closeDrawer}
             aria-label="Fechar"
-            className="cursor-pointer p-1 text-[1.375rem] leading-none opacity-60 hover:opacity-100"
+            className="cursor-pointer p-1 leading-none opacity-60 hover:opacity-100"
           >
-            ×
+            <CloseIcon size={20} />
           </button>
         </div>
 

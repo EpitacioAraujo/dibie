@@ -122,7 +122,9 @@ class ProductController extends Controller
 
         abort_if($existing + count($files) > self::MAX_IMAGES, 422, 'Máximo de '.self::MAX_IMAGES.' imagens por produto.');
 
-        $request->validate(['images.*' => ['image', 'max:4096']]);
+        // 8 MB: o print do editor sai em 2048px, e PNG de estampa com muito
+        // traço passa fácil dos 4 MB de antes.
+        $request->validate(['images.*' => ['image', 'max:8192']]);
 
         $created = [];
 
@@ -152,10 +154,10 @@ class ProductController extends Controller
         // (é servido do nosso domínio e pode carregar script).
         $request->validate([
             'mockup' => ['json'],
-            'art' => ['nullable', 'file', 'max:4096', 'mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif'],
+            'art' => ['nullable', 'file', 'max:8192', 'mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif'],
         ], [
             'art.mimetypes' => 'A arte precisa ser JPG, PNG, GIF, WEBP, AVIF ou HEIC.',
-            'art.max' => 'A arte precisa ter no máximo 4 MB.',
+            'art.max' => 'A arte precisa ter no máximo 8 MB.',
         ]);
 
         // Esses números viram parâmetros de render no navegador do cliente: valem
@@ -170,8 +172,9 @@ class ProductController extends Controller
             'offsetX' => ['required', 'numeric', 'between:-30,30'],
             'offsetY' => ['required', 'numeric', 'between:-30,30'],
             'rotation' => ['required', 'numeric', 'between:-180,180'],
-            'azimuth' => ['required', 'numeric', 'between:-180,-60'],
-            'elevation' => ['required', 'numeric', 'between:0,70'],
+            'rotateX' => ['required', 'numeric', 'between:0,360'],
+            'rotateY' => ['required', 'numeric', 'between:0,360'],
+            'zoom' => ['required', 'numeric', 'between:50,300'],
         ])->validate();
 
         // Sem arquivo novo a arte atual continua valendo — dá para reajustar só as

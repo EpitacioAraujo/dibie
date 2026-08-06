@@ -5,6 +5,7 @@ import { Testimonials } from "./components/Testimonials";
 import { Reveal } from "../../src/components/ui/Reveal";
 import { ProductRow } from "../../src/components/ProductGrid";
 import { useFeaturedProducts } from "../../hooks/useProducts";
+import { ArrowRightIcon } from "../../src/components/ui/icons";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -190,9 +191,9 @@ export default function Home() {
             <button
               type="submit"
               aria-label="Enviar"
-              className="h-10 w-10 flex-shrink-0 cursor-pointer rounded-full bg-ink text-white"
+              className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-ink text-white"
             >
-              →
+              <ArrowRightIcon size={18} />
             </button>
           </form>
         </Reveal>

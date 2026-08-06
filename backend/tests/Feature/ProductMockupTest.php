@@ -24,8 +24,9 @@ class ProductMockupTest extends TestCase
         'offsetX' => 0,
         'offsetY' => 1.2,
         'rotation' => 0,
-        'azimuth' => -135,
-        'elevation' => 22,
+        'rotateX' => 0,
+        'rotateY' => 45,
+        'zoom' => 100,
     ];
 
     private function actingAsAdmin(): void
@@ -83,7 +84,7 @@ class ProductMockupTest extends TestCase
 
         $this->getJson('/api/products/'.Product::first()->slug)
             ->assertOk()
-            ->assertJsonPath('mockup.azimuth', -135)
+            ->assertJsonPath('mockup.rotateY', 45)
             ->assertJsonPath('mockup_art_url', fn ($url) => is_string($url) && $url !== '');
     }
 
@@ -148,8 +149,8 @@ class ProductMockupTest extends TestCase
 
         $this->postJson('/api/admin/products', $this->payload([
             'art' => $this->art(),
-            'mockup' => json_encode(['azimuth' => 999] + self::SETTINGS),
-        ]))->assertJsonValidationErrorFor('azimuth');
+            'mockup' => json_encode(['rotateX' => 999] + self::SETTINGS),
+        ]))->assertJsonValidationErrorFor('rotateX');
     }
 
     public function test_arte_nova_substitui_a_anterior_no_disco(): void
@@ -194,11 +195,11 @@ class ProductMockupTest extends TestCase
 
         $this->postJson('/api/admin/products/'.$product->id, $this->payload([
             '_method' => 'PUT',
-            'mockup' => json_encode(['elevation' => 40] + self::SETTINGS),
+            'mockup' => json_encode(['zoom' => 120] + self::SETTINGS),
         ]))->assertOk();
 
         $this->assertSame($art, $product->fresh()->mockup['art']);
-        $this->assertSame(40, $product->fresh()->mockup['elevation']);
+        $this->assertSame(120, $product->fresh()->mockup['zoom']);
         Storage::disk('public')->assertExists($art);
     }
 

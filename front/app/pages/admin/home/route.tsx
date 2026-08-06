@@ -9,6 +9,7 @@ import { apiMessage } from "../../../lib/apiMessage";
 import { move } from "../../../lib/move";
 import { svgToPng } from "../../../lib/svgToPng";
 import { PlusIcon, TrashIcon } from "../../../src/components/ui/icons";
+import { toast } from "../../../src/components/ui/Toast";
 import { SlideEditor } from "./components/SlideEditor";
 
 const MOSAIC: { lane: HeroLane; label: string }[] = [
@@ -92,6 +93,7 @@ export default function AdminHome() {
         sub: i.sub,
         alt: i.alt,
       })),
+      { onSuccess: () => toast("Hero salvo") },
     );
   }
 
@@ -125,10 +127,13 @@ export default function AdminHome() {
       .filter((p) => p.featured && !picks.some((s) => s.id === p.id))
       .map((p) => ({ id: p.id, featured: false, position: 0 }));
 
-    saveFeatured.mutate([
-      ...picks.map((p, position) => ({ id: p.id, featured: true, position })),
-      ...dropped,
-    ]);
+    saveFeatured.mutate(
+      [
+        ...picks.map((p, position) => ({ id: p.id, featured: true, position })),
+        ...dropped,
+      ],
+      { onSuccess: () => toast("Vitrine salva") },
+    );
   }
 
   const failure = [hero.upload, hero.save, hero.remove, saveFeatured].find(

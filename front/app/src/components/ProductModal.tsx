@@ -4,6 +4,7 @@ import { useCart } from "../../stores/cart";
 import { formatBRL } from "../types/product";
 import { Overlay } from "./ui/Overlay";
 import { QtyStepper } from "./ui/QtyStepper";
+import { CloseIcon } from "./ui/icons";
 
 // three + o loader de .glb passam de 600 KB: só baixa quando o cliente pede o 3D.
 const MugStage = lazy(() =>
@@ -50,9 +51,9 @@ export function ProductModal() {
               type="button"
               onClick={closeProduct}
               aria-label="Fechar"
-              className="absolute right-3 top-3 z-10 cursor-pointer p-1 text-[1.375rem] leading-none opacity-60 hover:opacity-100"
+              className="absolute right-3 top-3 z-10 cursor-pointer p-1 leading-none opacity-60 hover:opacity-100"
             >
-              ×
+              <CloseIcon size={20} />
             </button>
             <div className="flex flex-col gap-3 md:flex-row md:gap-4">
               {(product.images.length > 1 || product.mockup) && (

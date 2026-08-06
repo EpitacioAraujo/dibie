@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
 import { move } from "../../../lib/move";
+import { CurrencyInput } from "../../../src/components/ui/CurrencyInput";
 import { PencilIcon, TrashIcon } from "../../../src/components/ui/icons";
+import { toast } from "../../../src/components/ui/Toast";
 import { ImageUploader, isSaved, type UploaderItem } from "./components/ImageUploader";
 
 type Draft = {
@@ -52,6 +54,7 @@ export default function AdminProducts() {
     });
     if (draft.id) await update.mutateAsync({ id: draft.id, body: fd });
     else await create.mutateAsync(fd);
+    toast(draft.id ? "Produto atualizado" : "Produto cadastrado");
     setDraft(null);
   }
 
@@ -160,11 +163,9 @@ export default function AdminProducts() {
             ))}
             <label className="mb-3 block text-body">
               preço
-              <input
-                type="number"
-                step="0.01"
+              <CurrencyInput
                 value={draft.price}
-                onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+                onChange={(v) => setDraft({ ...draft, price: v })}
                 className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-2 outline-none"
               />
             </label>
