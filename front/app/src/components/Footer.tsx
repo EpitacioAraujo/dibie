@@ -1,51 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { prefersReducedMotion } from "../../lib/motion";
+import { Reveal } from "./ui/Reveal";
 import { INSTAGRAM, WHATSAPP_URL } from "../../lib/config";
 
 export function Footer() {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const [inView, setInView] = useState(false);
-  const [reduced, setReduced] = useState(false);
-
-  // wordmark: transição de cor (cinza → tinta), trigger próprio e independente
-  useEffect(() => {
-    if (prefersReducedMotion()) {
-      setReduced(true);
-      return;
-    }
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            setInView(true);
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.25 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const wordmarkColor = reduced || inView ? "var(--color-ink)" : "#b9b5ae";
-
   return (
     <footer className="px-6 pt-12 pb-8 md:px-12">
-      <p
-        ref={ref}
-        aria-hidden
-        className="m-0 font-semibold leading-[0.9] tracking-[-0.06em]"
-        style={{
-          fontSize: "clamp(6rem, 24vw, 23.75rem)",
-          color: wordmarkColor,
-          transition: "color 1.2s var(--ease-milo)",
-        }}
-      >
-        dibiê
-      </p>
+      {/* a logo é bitmap: entra com o reveal padrão, sem a transição de cor do antigo wordmark */}
+      <Reveal
+        as="img"
+        src="/img/logo.svg"
+        alt="dibiê"
+        className="block w-full max-w-[1200px]"
+      />
       <div className="mt-10 flex flex-wrap items-center justify-between gap-6 text-body">
         <div className="flex gap-6">
           <a

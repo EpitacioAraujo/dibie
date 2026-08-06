@@ -5,7 +5,6 @@ import { Testimonials } from "./components/Testimonials";
 import { Reveal } from "../../src/components/ui/Reveal";
 import { ProductRow } from "../../src/components/ProductGrid";
 import { useFeaturedProducts } from "../../hooks/useProducts";
-import { ArrowRightIcon } from "../../src/components/ui/icons";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -41,7 +40,7 @@ const TRUST = [
     ),
   },
   {
-    title: "Troca em 30 dias",
+    title: "Troca em 10 dias",
     desc: "Compre sem medo com nossa política de troca",
     icon: (
       <>
@@ -150,7 +149,7 @@ export default function Home() {
       <Testimonials />
 
       {/* Seção 4: a dibiê por dentro (texto + imagem em bloco) */}
-      <section className="grid items-center gap-6 px-6 pt-[140px] md:grid-cols-2 md:gap-8 md:px-12">
+      <section className="grid items-center gap-6 px-6 pt-[140px] pb-[120px] md:grid-cols-2 md:gap-8 md:px-12">
         <Reveal>
           <h2 className="m-0 max-w-[480px] text-h2">
             Uma empresa apaixonada por transformar memórias em peças
@@ -163,40 +162,10 @@ export default function Home() {
         </Reveal>
         <Reveal
           as="img"
-          src="/img/slide-02.webp"
+          src="/img/sobre-atelie.jpg"
           alt="Produção das peças personalizadas dibiê"
           className="aspect-square w-full rounded object-cover"
         />
-      </section>
-
-      {/* Seção 5: newsletter */}
-      <section className="px-6 pt-[160px] pb-[120px] text-center md:px-12">
-        <Reveal>
-          <h2 className="text-h2">Fica de olho na gente</h2>
-          <p className="mx-auto mt-4 mb-8 max-w-[320px] text-body text-ink-40">
-            Cadastre-se para saber das novidades em primeira mão e ganhar
-            descontos especiais.
-          </p>
-          <form
-            className="mx-auto flex w-[min(320px,100%)] items-center gap-2 rounded-full bg-ink-5 py-1.5 pr-1.5 pl-5"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="tel"
-              inputMode="tel"
-              placeholder="Seu WhatsApp"
-              aria-label="Seu WhatsApp"
-              className="min-w-0 flex-1 border-none bg-transparent outline-none"
-            />
-            <button
-              type="submit"
-              aria-label="Enviar"
-              className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-ink text-white"
-            >
-              <ArrowRightIcon size={18} />
-            </button>
-          </form>
-        </Reveal>
       </section>
     </>
   );

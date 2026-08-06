@@ -7,16 +7,16 @@ import {
 
 const TESTIMONIALS = [
   {
-    name: "Ana Beatriz",
-    role: "Presente para a família",
-    text: "Pedi uma caneca com foto de família de presente pro aniversário da minha mãe e ela chorou de emoção. Acabamento impecável.",
-    image: "/img/tile-01.webp",
+    name: "Camila Ferreira",
+    role: "Presente para o marido",
+    text: "Pedi uma caneca com a nossa foto de presente pro aniversário do meu marido e ele se emocionou. Acabamento impecável.",
+    image: "/img/depoimento-familia.jpg",
   },
   {
     name: "Marcos Vinícius",
     role: "Revenda de kits personalizados",
     text: "Comprei um kit pra revender na minha loja e o retorno dos clientes foi ótimo — qualidade de sublimação muito acima do que eu esperava.",
-    image: "/img/tile-05.webp",
+    image: "/img/depoimento-revenda.jpg",
   },
   {
     name: "Belas Artes Tech",
@@ -27,8 +27,8 @@ const TESTIMONIALS = [
   {
     name: "Juliana Prado",
     role: "Lembrancinhas de casamento",
-    text: "Encomendei canecas personalizadas pros lembrancinhas do meu casamento. Todo mundo elogiou, virou o item mais comentado da festa.",
-    image: "/img/tile-08.webp",
+    text: "Encomendei canecas personalizadas pras lembrancinhas do meu casamento. Todo mundo elogiou, virou o item mais comentado da festa.",
+    image: "/img/depoimento-casamento.jpg",
   },
 ];
 
