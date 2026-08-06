@@ -9,12 +9,13 @@ export default [
   // Site público (com header/footer/carrinho)
   layout("pages/public.tsx", [
     index("pages/home/route.tsx"),
-    route("pecas", "pages/pecas.tsx"),
+    route("produtos", "pages/produtos.tsx"),
   ]),
 
-  // Admin (client-only, fora do prerender; sem o chrome do site)
-  route("admin/login", "pages/admin/login.tsx"),
-  route("admin", "pages/admin/layout.tsx", [
+  // Admin (client-only, fora do prerender; sem o chrome do site). Fica sob
+  // /__/ para não disputar caminho com nenhuma página do site.
+  route("__/admin/login", "pages/admin/login.tsx"),
+  route("__/admin", "pages/admin/layout.tsx", [
     index("pages/admin/dashboard.tsx"),
     route("home", "pages/admin/home/route.tsx"),
     route("products", "pages/admin/products/route.tsx"),

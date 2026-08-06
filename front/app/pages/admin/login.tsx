@@ -13,7 +13,7 @@ export default function AdminLogin() {
   // se já houver sessão no storage, entra direto
   useEffect(() => {
     useAuth.persist.rehydrate();
-    if (useAuth.getState().token) navigate("/admin", { replace: true });
+    if (useAuth.getState().token) navigate("/__/admin", { replace: true });
   }, [navigate]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -22,7 +22,7 @@ export default function AdminLogin() {
     setError(null);
     try {
       await login(email, password);
-      navigate("/admin", { replace: true });
+      navigate("/__/admin", { replace: true });
     } catch {
       setError("E-mail ou senha inválidos.");
     } finally {

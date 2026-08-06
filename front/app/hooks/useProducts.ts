@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../src/clients/laravel/config/client";
 import type { MugSettings } from "../src/components/mug/MugStage";
 import type { Product } from "../src/types/product";
@@ -50,32 +50,33 @@ export function useFeaturedProducts() {
   return { products: data ?? null, error: isError };
 }
 
-/** Catálogo com busca, filtro de categoria e paginação (tudo no backend). */
-export function useProductSearch({
-  q,
-  cat,
-  page,
-}: {
-  q: string;
-  cat: string;
-  page: number;
-}) {
-  const params = new URLSearchParams({ page: String(page) });
-  if (q) params.set("q", q);
-  if (cat) params.set("cat", cat);
-
-  const { data, isError, isLoading } = useQuery({
-    queryKey: ["products", "search", q, cat, page],
-    queryFn: () => apiFetch<Page>(`/api/products?${params}`),
-    // sem isso a lista some a cada troca de página
-    placeholderData: keepPreviousData,
-  });
+/**
+ * Catálogo com busca e filtro de categoria. As páginas do backend se acumulam
+ * numa lista só: o catálogo cresce no "quero ver mais", nunca troca de página.
+ */
+export function useProductSearch({ q, cat }: { q: string; cat: string }) {
+  const { data, isError, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["products", "search", q, cat],
+      initialPageParam: 1,
+      queryFn: ({ pageParam }) => {
+        const params = new URLSearchParams({ page: String(pageParam) });
+        if (q) params.set("q", q);
+        if (cat) params.set("cat", cat);
+        return apiFetch<Page>(`/api/products?${params}`);
+      },
+      getNextPageParam: (last) =>
+        last.current_page < last.last_page ? last.current_page + 1 : undefined,
+      // sem isso a lista some a cada troca de busca/categoria
+      placeholderData: keepPreviousData,
+    });
 
   return {
-    items: data?.data.map(toProduct) ?? [],
-    page: data?.current_page ?? page,
-    lastPage: data?.last_page ?? 1,
-    total: data?.total ?? 0,
+    items: data?.pages.flatMap((p) => p.data.map(toProduct)) ?? [],
+    total: data?.pages[0]?.total ?? 0,
+    hasMore: hasNextPage,
+    loadMore: fetchNextPage,
+    isLoadingMore: isFetchingNextPage,
     isLoading,
     error: isError,
   };

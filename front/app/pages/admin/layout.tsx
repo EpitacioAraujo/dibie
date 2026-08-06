@@ -8,14 +8,14 @@ import {
 } from "../../src/components/ui/icons";
 
 const NAV = [
-  { to: "/admin", label: "Painel", perm: null },
-  { to: "/admin/home", label: "Home", perm: "products.update" },
-  { to: "/admin/products", label: "Produtos", perm: "products.view" },
-  { to: "/admin/mockups", label: "Mockups", perm: "products.update" },
-  { to: "/admin/carga", label: "Carga", perm: "products.update" },
-  { to: "/admin/orders", label: "Pedidos", perm: "orders.view" },
-  { to: "/admin/users", label: "Usuários", perm: "users.view" },
-  { to: "/admin/roles", label: "Perfis", perm: "roles.view" },
+  { to: "/__/admin", label: "Painel", perm: null },
+  { to: "/__/admin/home", label: "Home", perm: "products.update" },
+  { to: "/__/admin/products", label: "Produtos", perm: "products.view" },
+  { to: "/__/admin/mockups", label: "Mockups", perm: "products.update" },
+  { to: "/__/admin/carga", label: "Carga", perm: "products.update" },
+  { to: "/__/admin/orders", label: "Pedidos", perm: "orders.view" },
+  { to: "/__/admin/users", label: "Usuários", perm: "users.view" },
+  { to: "/__/admin/roles", label: "Perfis", perm: "roles.view" },
 ];
 
 export default function AdminLayout() {
@@ -35,7 +35,7 @@ export default function AdminLayout() {
   }, []);
 
   if (!ready) return null;
-  if (!token) return <Navigate to="/admin/login" replace />;
+  if (!token) return <Navigate to="/__/admin/login" replace />;
 
   return (
     <div className="flex min-h-screen">
@@ -59,8 +59,8 @@ export default function AdminLayout() {
         </div>
         {NAV.filter((n) => !n.perm || hasPermission(n.perm)).map((n) => {
           const active =
-            n.to === "/admin"
-              ? location.pathname === "/admin"
+            n.to === "/__/admin"
+              ? location.pathname === "/__/admin"
               : location.pathname.startsWith(n.to);
           return (
             <Link
@@ -83,7 +83,7 @@ export default function AdminLayout() {
             title={collapsed ? user?.name : undefined}
             onClick={async () => {
               await logout();
-              navigate("/admin/login");
+              navigate("/__/admin/login");
             }}
             className="flex w-full cursor-pointer items-center justify-center gap-2 rounded px-3 py-2 hover:bg-ink-10"
           >

@@ -100,7 +100,7 @@ export default function Home() {
         )}
         <Reveal className="flex justify-center">
           <Link
-            to="/pecas"
+            to="/produtos"
             className="inline-block rounded-full bg-ink-5 px-[18px] py-2.5 text-body transition-colors hover:bg-ink-10"
           >
             Ver todas

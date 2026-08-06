@@ -2,10 +2,10 @@ import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 
 const CARDS = [
-  { to: "/admin/products", label: "Produtos", perm: "products.view" },
-  { to: "/admin/orders", label: "Pedidos", perm: "orders.view" },
-  { to: "/admin/users", label: "Usuários", perm: "users.view" },
-  { to: "/admin/roles", label: "Perfis", perm: "roles.view" },
+  { to: "/__/admin/products", label: "Produtos", perm: "products.view" },
+  { to: "/__/admin/orders", label: "Pedidos", perm: "orders.view" },
+  { to: "/__/admin/users", label: "Usuários", perm: "users.view" },
+  { to: "/__/admin/roles", label: "Perfis", perm: "roles.view" },
 ];
 
 export default function AdminDashboard() {

@@ -56,7 +56,7 @@ export function Header() {
       </Link>
 
       <nav className="hidden gap-8 text-body md:flex">
-        <Link to="/pecas" className="hover:opacity-70">
+        <Link to="/produtos" className="hover:opacity-70">
           Produtos
         </Link>
       </nav>

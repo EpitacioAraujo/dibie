@@ -4,5 +4,5 @@ export default {
   // SSG: sem servidor em runtime. As rotas são pré-renderizadas para HTML
   // estático no build e servidas por nginx (igual às gerações anteriores).
   ssr: false,
-  prerender: ["/", "/pecas"],
+  prerender: ["/", "/produtos"],
 } satisfies Config;

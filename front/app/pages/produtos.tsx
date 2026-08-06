@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Route } from "./+types/pecas";
+import type { Route } from "./+types/produtos";
 import { Reveal } from "../src/components/ui/Reveal";
 import { ProductRow } from "../src/components/ProductGrid";
 import { useCategories, useProductSearch } from "../hooks/useProducts";
@@ -14,21 +14,20 @@ export function meta(_: Route.MetaArgs) {
   ];
 }
 
-export default function Pecas() {
+export default function Produtos() {
   const [search, setSearch] = useState(""); // o que está digitado
   const [q, setQ] = useState(""); // o que já foi para a API
   const [cat, setCat] = useState("");
-  const [page, setPage] = useState(1);
 
   const categories = useCategories();
-  const { items, lastPage, total, isLoading } = useProductSearch({ q, cat, page });
+  const { items, hasMore, loadMore, isLoadingMore, isLoading } = useProductSearch({
+    q,
+    cat,
+  });
 
   // debounce: não dispara uma request por tecla
   useEffect(() => {
-    const id = setTimeout(() => {
-      setQ(search.trim());
-      setPage(1);
-    }, 300);
+    const id = setTimeout(() => setQ(search.trim()), 300);
     return () => clearTimeout(id);
   }, [search]);
 
@@ -54,10 +53,7 @@ export default function Pecas() {
         />
         <select
           value={cat}
-          onChange={(e) => {
-            setCat(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) => setCat(e.target.value)}
           aria-label="Filtrar por categoria"
           className="cursor-pointer rounded-full bg-ink-5 px-5 py-2.5 text-body outline-none"
         >
@@ -81,33 +77,26 @@ export default function Pecas() {
           </p>
         )}
 
-        {lastPage > 1 && (
-          <div className="flex items-center justify-center gap-4 py-6 text-body">
+        {hasMore && (
+          <div className="flex justify-center py-6">
             <button
               type="button"
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page <= 1}
-              className="cursor-pointer rounded-full bg-ink-5 px-4 py-2 transition-colors hover:bg-ink-10 disabled:cursor-default disabled:opacity-40"
+              onClick={() => loadMore()}
+              disabled={isLoadingMore}
+              className="cursor-pointer rounded-full bg-ink-5 px-6 py-2.5 text-body transition-colors hover:bg-ink-10 disabled:cursor-default disabled:opacity-40"
             >
-              anterior
-            </button>
-            <span className="text-ink-40">
-              página {page} de {lastPage} ({total} peças)
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= lastPage}
-              className="cursor-pointer rounded-full bg-ink-5 px-4 py-2 transition-colors hover:bg-ink-10 disabled:cursor-default disabled:opacity-40"
-            >
-              próxima
+              {isLoadingMore ? "carregando…" : "quero ver mais"}
             </button>
           </div>
         )}
 
-        <Reveal className="pt-10 text-right">
-          <h2 className="m-0 text-h2">...e muito mais por vir.</h2>
-        </Reveal>
+        {/* Fim do catálogo: a frase é o que fecha a página quando não há mais o
+            que carregar. */}
+        {!hasMore && items.length > 0 && (
+          <Reveal className="pt-10 text-right">
+            <h2 className="m-0 text-h2">...e muito mais por vir.</h2>
+          </Reveal>
+        )}
       </section>
     </>
   );
