@@ -3,6 +3,6 @@
 export const WHATSAPP = import.meta.env.VITE_WHATSAPP ?? "5585985242758";
 
 export const INSTAGRAM =
-  import.meta.env.VITE_INSTAGRAM ?? "https://www.instagram.com/dibiepersonalizados/";
+  import.meta.env.VITE_INSTAGRAM ?? "https://www.instagram.com/dibie.oficial/";
 
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP}`;
