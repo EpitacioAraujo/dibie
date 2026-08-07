@@ -38,16 +38,10 @@ services:
       - "${API_PORT:-8000}:8000"
 
   front:
+    # config do bundle vem do front/.env (build-time), não daqui
     build:
       context: ${CODE_DIR:-.}/front
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
-        VITE_WHATSAPP: ${VITE_WHATSAPP:-5585985242758}
-        VITE_INSTAGRAM: ${VITE_INSTAGRAM:-https://www.instagram.com/dibiepersonalizados/}
     restart: unless-stopped
-    env_file:
-      - path: front.env
-        required: false
     depends_on:
       - backend
     ports:
