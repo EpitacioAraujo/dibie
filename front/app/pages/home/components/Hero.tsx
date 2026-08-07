@@ -39,21 +39,21 @@ const TILES = {
 const SLIDES = [
   {
     src: "/img/slide-01.webp",
-    alt: "Caneca personalizada dibiê",
-    title: "Feita pra contar histórias",
-    sub: "Conheça as canecas",
+    alt: "Canecas personalizadas com a logo de uma empresa",
+    title: "Sua marca em cada mesa",
+    sub: "Brindes corporativos sob encomenda",
   },
   {
     src: "/img/slide-02.webp",
-    alt: "Coleção de canecas personalizadas dibiê",
-    title: "Cada peça, um carinho",
-    sub: "Feito à mão, feito pra você",
+    alt: "Caneca sendo personalizada com a arte do cliente",
+    title: "Feito com você. Feito para você.",
+    sub: "Do rascunho à peça pronta",
   },
   {
     src: "/img/slide-03.webp",
-    alt: "Caneca com estampa sublimada",
-    title: "Cores que abraçam",
-    sub: "Personalize a sua",
+    alt: "Canecas dibiê com artes diferentes",
+    title: "Uma arte para cada gosto",
+    sub: "Escolha uma das nossas ou crie a sua",
   },
 ];
 

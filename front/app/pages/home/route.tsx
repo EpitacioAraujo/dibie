@@ -152,13 +152,8 @@ export default function Home() {
       <section className="grid items-center gap-6 px-6 pt-[140px] pb-[120px] md:grid-cols-2 md:gap-8 md:px-12">
         <Reveal>
           <h2 className="m-0 max-w-[480px] text-h2">
-            Uma empresa apaixonada por transformar memórias em peças
+            Feita para você, não para a prateleira.
           </h2>
-          <p className="my-8 max-w-[300px] text-body text-ink-40">
-            Depois de anos estampando histórias — presentes de família,
-            lembranças de festa, canecas de equipe — decidimos levar a dibiê
-            para todo mundo.
-          </p>
         </Reveal>
         <Reveal
           as="img"
