@@ -2,6 +2,7 @@ import type { Route } from "./+types/route";
 import { Link } from "react-router";
 import { Hero } from "./components/Hero";
 import { Testimonials } from "./components/Testimonials";
+import { Personalize } from "./components/Personalize";
 import { Reveal } from "../../src/components/ui/Reveal";
 import { ProductRow } from "../../src/components/ProductGrid";
 import { useFeaturedProducts } from "../../hooks/useProducts";
@@ -12,7 +13,7 @@ export function meta(_: Route.MetaArgs) {
     {
       name: "description",
       content:
-        "Desenvolvemos produtos personalizados sob medida para empresas, eventos e pessoas que valorizam originalidade e qualidade.",
+        "Desenvolvemos produtos personalizados para empresas, eventos e pessoas que valorizam originalidade e qualidade.",
     },
   ];
 }
@@ -40,7 +41,7 @@ const TRUST = [
     ),
   },
   {
-    title: "Troca em 10 dias",
+    title: "Troca em 7 dias",
     desc: "Compre sem medo com nossa política de troca",
     icon: (
       <>
@@ -80,7 +81,7 @@ export default function Home() {
         </Reveal>
         <Reveal>
           <h2 className="m-0 max-w-[720px] text-h4">
-            Desenvolvemos produtos personalizados sob medida para empresas,
+            Desenvolvemos produtos personalizados para empresas,
             eventos e pessoas que valorizam originalidade e qualidade.
           </h2>
         </Reveal>
@@ -148,20 +149,8 @@ export default function Home() {
 
       <Testimonials />
 
-      {/* Seção 4: a dibiê por dentro (texto + imagem em bloco) */}
-      <section className="grid items-center gap-6 px-6 pt-[140px] pb-[120px] md:grid-cols-2 md:gap-8 md:px-12">
-        <Reveal>
-          <h2 className="m-0 max-w-[480px] text-h2">
-            Feita para você, não para a prateleira.
-          </h2>
-        </Reveal>
-        <Reveal
-          as="img"
-          src="/img/sobre-atelie.jpg"
-          alt="Produção das peças personalizadas dibiê"
-          className="aspect-square w-full rounded object-cover"
-        />
-      </section>
+      {/* Seção 4: conversão — a caneca girando e o caminho para o WhatsApp */}
+      <Personalize />
     </>
   );
 }

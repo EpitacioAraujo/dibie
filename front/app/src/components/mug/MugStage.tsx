@@ -107,6 +107,7 @@ export function MugStage({
   ref,
   onError,
   onChange,
+  spin,
 }: {
   settings: MugSettings;
   /** Só o editor precisa: no site o cliente apenas gira a caneca. */
@@ -118,6 +119,13 @@ export function MugStage({
    * Sem isto (site público) o mouse orbita a câmera, como sempre foi.
    */
   onChange?: (patch: Partial<Pick<MugSettings, "rotateX" | "rotateY" | "zoom">>) => void;
+  /**
+   * Giro contínuo em torno do eixo, tocado dentro do loop de render — o
+   * settings.rotateY é ignorado enquanto isto estiver ligado. onHandleFront
+   * avisa a cada meia volta, quando a alça (e a emenda da estampa) passa pela
+   * frente: é a única janela em que dá para trocar a arte sem ninguém ver.
+   */
+  spin?: { periodMs: number; onHandleFront?: () => void };
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   // Guarda o que os efeitos de settings precisam mexer sem recriar a cena.
@@ -139,6 +147,10 @@ export function MugStage({
   settingsRef.current = settings;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const spinRef = useRef(spin);
+  spinRef.current = spin;
+  /** Ângulo do giro contínuo, em radianos. null = sem giro (usa o settings). */
+  const spinYRef = useRef<number | null>(null);
 
   /** Redesenha a estampa e reajusta as medidas. Estável: lê tudo de refs. */
   const repaint = useCallback(() => {
@@ -156,7 +168,11 @@ export function MugStage({
       // fica na meia altura e o modelo desce a mesma medida dentro dele.
       s.model.position.y = -settings.height / 2;
       s.spin.position.y = settings.height / 2;
-      s.spin.rotation.set(deg(settings.rotateX), deg(settings.rotateY), 0);
+      s.spin.rotation.set(
+        deg(settings.rotateX),
+        spinYRef.current ?? deg(settings.rotateY),
+        0,
+      );
       s.controls.target.set(0, settings.height / 2, 0);
       s.controls.update();
     }
@@ -345,8 +361,27 @@ export function MugStage({
     observer.observe(mount);
 
     let frame = 0;
+    // Fase da volta atual (0 a 1). Meia volta = alça de frente.
+    let phase = 0;
+    let previous = performance.now();
     const loop = () => {
       frame = requestAnimationFrame(loop);
+
+      const now = performance.now();
+      // Aba em segundo plano não recebe rAF: sem o teto, o primeiro frame na
+      // volta pularia a meia volta inteira (e a troca de arte apareceria).
+      const elapsed = Math.min(now - previous, 100);
+      previous = now;
+
+      const turning = spinRef.current;
+      if (turning && state.spin) {
+        const before = phase;
+        phase = (phase + elapsed / turning.periodMs) % 1;
+        spinYRef.current = phase * Math.PI * 2;
+        state.spin.rotation.y = spinYRef.current;
+        if (before < 0.5 && phase >= 0.5) turning.onHandleFront?.();
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
