@@ -13,7 +13,7 @@ export function meta(_: Route.MetaArgs) {
     {
       name: "description",
       content:
-        "Desenvolvemos produtos personalizados para empresas, eventos e pessoas que valorizam originalidade e qualidade.",
+        "Desenvolvemos produtos personalizados para empresas, eventos, presentes e ocasiões especiais.",
     },
   ];
 }
@@ -81,14 +81,22 @@ export default function Home() {
         </Reveal>
         <Reveal>
           <h2 className="m-0 max-w-[720px] text-h4">
-            Desenvolvemos produtos personalizados para empresas,
-            eventos e pessoas que valorizam originalidade e qualidade.
+            Desenvolvemos produtos personalizados para empresas, eventos,
+            presentes e ocasiões especiais.
           </h2>
         </Reveal>
       </section>
 
       {/* Seção 2: produtos em destaque (por linha, stagger por card) */}
       <section className="px-6 pt-16 md:px-12">
+        <Reveal className="mb-8 flex justify-start">
+          <Link
+            to="/produtos"
+            className="inline-block rounded-full bg-ink-5 px-[18px] py-2.5 text-body transition-colors hover:bg-ink-10"
+          >
+            Ver categorias
+          </Link>
+        </Reveal>
         <ProductRow products={featured.slice(0, 3)} cols={3} />
         {featured.length > 3 && (
           // Os 2 cards grandes só fazem sentido com os 5 slots preenchidos;
@@ -98,18 +106,13 @@ export default function Home() {
             cols={featured.length >= 5 ? 2 : 3}
           />
         )}
-        <Reveal className="flex justify-center">
-          <Link
-            to="/produtos"
-            className="inline-block rounded-full bg-ink-5 px-[18px] py-2.5 text-body transition-colors hover:bg-ink-10"
-          >
-            Ver todas
-          </Link>
-        </Reveal>
       </section>
 
-      {/* Seção 3: confiança (heading em bloco, cards staggered) */}
-      <section className="px-6 pt-[140px] text-center md:px-12">
+      {/* Seção 3: conversão — a caneca girando e o caminho para o WhatsApp */}
+      <Personalize />
+
+      {/* Seção 4: confiança — título, depoimentos e vantagens, colada no rodapé */}
+      <section className="px-6 pt-[140px] pb-[100px] text-center md:px-12">
         <Reveal>
           <h2 className="text-h2">
             Confiança de quem
@@ -120,7 +123,10 @@ export default function Home() {
             Nosso cuidado em cada peça conquistou clientes pelo Brasil inteiro.
           </p>
         </Reveal>
-        <div className="mt-16 grid gap-4 text-center md:grid-cols-4">
+
+        <Testimonials />
+
+        <div className="mt-[300px] grid gap-4 text-center md:grid-cols-4">
           {TRUST.map((c, i) => (
             <Reveal
               key={c.title}
@@ -146,11 +152,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      <Testimonials />
-
-      {/* Seção 4: conversão — a caneca girando e o caminho para o WhatsApp */}
-      <Personalize />
     </>
   );
 }

@@ -59,7 +59,8 @@ export function Testimonials() {
   const next = () => setCurrent((c) => (c + 1) % total);
 
   return (
-    <section className="px-6 pt-[140px] md:px-12">
+    // sem padding lateral: vive dentro da seção "Confiança", que já tem o dela
+    <section className="pt-20 text-left">
       <Reveal>
         <p className="font-mono text-[0.625rem] uppercase tracking-[0.22em] text-ink-40">
           Depoimentos

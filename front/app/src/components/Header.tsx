@@ -55,44 +55,46 @@ export function Header() {
         <img src="/img/logo.svg" alt="Dibiê" className="h-7 w-auto md:h-9" />
       </Link>
 
-      <nav className="hidden gap-8 text-body md:flex">
-        <Link to="/produtos" className="hover:opacity-70">
-          Produtos
-        </Link>
-      </nav>
+      <div className="flex items-center gap-4 md:gap-8">
+        <nav className="hidden text-body md:flex">
+          <Link to="/produtos" className="hover:opacity-70">
+            Produtos
+          </Link>
+        </nav>
 
-      <div className="flex items-center gap-2">
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Fale com a dibiê no WhatsApp"
-          title="WhatsApp"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-5 transition-colors hover:bg-ink-10"
-        >
-          <WhatsAppIcon />
-        </a>
-        <a
-          href={INSTAGRAM}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Instagram da dibiê"
-          title="Instagram"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-5 transition-colors hover:bg-ink-10"
-        >
-          <InstagramIcon />
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Fale com a dibiê no WhatsApp"
+            title="WhatsApp"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-roxo text-white transition-opacity hover:opacity-85"
+          >
+            <WhatsAppIcon size={22} />
+          </a>
+          <a
+            href={INSTAGRAM}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram da dibiê"
+            title="Instagram"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-roxo text-white transition-opacity hover:opacity-85"
+          >
+            <InstagramIcon size={22} />
+          </a>
 
-        <button
-          type="button"
-          onClick={openDrawer}
-          className="cursor-pointer rounded-full bg-ink-5 px-3.5 py-2 text-body transition-colors hover:bg-ink-10"
-        >
-          Carrinho{" "}
-          <span className="ml-1 inline-block min-w-[18px] rounded-full bg-ink px-1 py-px text-center text-white">
-            {count}
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={openDrawer}
+            className="cursor-pointer rounded-full bg-ink-5 px-3.5 py-2 text-body transition-colors hover:bg-ink-10"
+          >
+            Carrinho{" "}
+            <span className="ml-1 inline-block min-w-[18px] rounded-full bg-ink px-1 py-px text-center text-white">
+              {count}
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );

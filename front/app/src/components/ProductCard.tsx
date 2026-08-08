@@ -14,7 +14,8 @@ export function ProductCard({ product }: { product: Product }) {
         alt={product.name}
         className="aspect-[3/2] w-full rounded object-cover"
       />
-      <div className="mt-3 flex justify-between text-body">
+      {/* preço colado no nome: alinhado à direita ele parecia ser do card seguinte */}
+      <div className="mt-3 flex gap-3 text-body">
         <span className="font-semibold">{product.name}</span>
         <span className="text-ink-40">{formatBRL(product.price)}</span>
       </div>

@@ -122,7 +122,7 @@ export function Personalize() {
           delay={0.15}
           className="m-0 mt-6 text-right text-h2 md:absolute md:bottom-0 md:right-0 md:z-10 md:mt-0 md:max-w-[360px]"
         >
-          do jeito que você quer.
+          do jeito que você quiser.
         </Reveal>
       </div>
 

@@ -46,13 +46,13 @@ const SLIDES = [
   {
     src: "/img/slide-02.webp",
     alt: "Caneca sendo personalizada com a arte do cliente",
-    title: "Feito com você. Feito para você.",
+    title: "Feito com você.\nFeito para você.",
     sub: "Do rascunho à peça pronta",
   },
   {
     src: "/img/slide-03.webp",
     alt: "Canecas dibiê com artes diferentes",
-    title: "Uma arte para cada gosto",
+    title: "Uma arte para\ncada gosto",
     sub: "Escolha uma das nossas ou crie a sua",
   },
 ];

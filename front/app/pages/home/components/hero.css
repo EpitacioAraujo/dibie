@@ -185,6 +185,8 @@
 }
 .hero-caption-slides .caption p {
   margin: 0;
+  /* "\n" no título do slide vira quebra de linha (fallback e admin) */
+  white-space: pre-line;
 }
 .hero-caption-slides .caption .text-body {
   margin-top: 8px;
