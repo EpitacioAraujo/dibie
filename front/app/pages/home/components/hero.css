@@ -129,7 +129,9 @@
 .hero-slide.active {
   opacity: 1;
 }
+.hero-slide picture,
 .hero-slide img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -138,10 +140,16 @@
 .hero-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.65), transparent 60%);
+  /* mobile: escurece o topo (onde a legenda está); desktop: a lateral direita */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent 45%);
   opacity: 0;
   transition: opacity 0.8s var(--ease-milo);
   pointer-events: none;
+}
+@media (min-width: 768px) {
+  .hero-shade {
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.65), transparent 60%);
+  }
 }
 .hero-shade.on {
   opacity: 1;
@@ -160,6 +168,15 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.8s var(--ease-milo) 0.3s, visibility 0s 0.3s;
+}
+/* no celular as canecas ficam na metade de baixo do slide vertical: a legenda
+   sobe pro topo em vez de cair em cima delas */
+@media (max-width: 767px) {
+  .hero-caption {
+    top: 32px;
+    transform: none;
+    align-items: flex-start;
+  }
 }
 @media (min-width: 768px) {
   .hero-caption {

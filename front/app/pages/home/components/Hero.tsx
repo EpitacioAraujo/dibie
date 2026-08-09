@@ -36,21 +36,35 @@ const TILES = {
   ],
 };
 
-const SLIDES = [
+/* `mobile`: versão vertical do mesmo cenário — a hero no celular é retrato e o
+   recorte da imagem larga cortava as canecas. Só o fallback tem: o que vem do
+   admin é uma imagem só. */
+type Slide = {
+  src: string;
+  mobile?: string;
+  alt: string;
+  title: string;
+  sub: string;
+};
+
+const SLIDES: Slide[] = [
   {
     src: "/img/slide-01.webp",
+    mobile: "/img/slide-01-mobile.jpg",
     alt: "Canecas personalizadas com a logo de uma empresa",
     title: "Sua marca em cada mesa",
     sub: "Brindes corporativos sob encomenda",
   },
   {
     src: "/img/slide-02.webp",
+    mobile: "/img/slide-02-mobile.jpg",
     alt: "Caneca sendo personalizada com a arte do cliente",
     title: "Feito com você.\nFeito para você.",
     sub: "Do rascunho à peça pronta",
   },
   {
     src: "/img/slide-03.webp",
+    mobile: "/img/slide-03-mobile.jpg",
     alt: "Canecas dibiê com artes diferentes",
     title: "Uma arte para\ncada gosto",
     sub: "Escolha uma das nossas ou crie a sua",
@@ -91,7 +105,7 @@ function useHeroContent() {
       midRight: pick("midRight", tile, TILES.midRight),
       bottom: pick("bottom", tile, TILES.bottom),
     },
-    slides: pick(
+    slides: pick<Slide>(
       "slide",
       (i) => ({
         src: i.image_url,
@@ -123,10 +137,18 @@ export function Hero() {
   const [current, setCurrent] = useState(0);
   const [ready, setReady] = useState(false);
 
-  // posição/tamanho final do frame (preenche a .hero, menos padding)
+  // posição/tamanho final do frame (preenche a .hero, menos padding).
+  // No celular o slide fica com 70% da altura, centralizado.
   function finalFrame(h: DOMRect) {
-    const pad = window.innerWidth >= 768 ? 48 : 24;
-    return { left: pad, top: 0, width: h.width - pad * 2, height: h.height - 24 };
+    const mobile = window.innerWidth < 768;
+    const pad = mobile ? 24 : 48;
+    const height = mobile ? h.height * 0.7 : h.height - 24;
+    return {
+      left: pad,
+      top: mobile ? (h.height - height) / 2 : 0,
+      width: h.width - pad * 2,
+      height,
+    };
   }
 
   useLayoutEffect(() => {
@@ -359,7 +381,12 @@ export function Hero() {
                 key={i}
                 className={`hero-slide${i === current ? " active" : ""}`}
               >
-                <img src={sl.src} alt={sl.alt} />
+                <picture>
+                  {sl.mobile && (
+                    <source media="(max-width: 767px)" srcSet={sl.mobile} />
+                  )}
+                  <img src={sl.src} alt={sl.alt} />
+                </picture>
               </div>
             ))}
             <div className={`hero-shade${on ? " on" : ""}`} />
