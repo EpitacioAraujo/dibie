@@ -1,12 +1,23 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import { useAdminProducts } from "../../../hooks/useAdminProducts";
+import { useAdminProducts, type AdminProduct } from "../../../hooks/useAdminProducts";
+import type { MugSettings } from "../../../src/components/mug/MugStage";
 import { move } from "../../../lib/move";
 import { CurrencyInput } from "../../../src/components/ui/CurrencyInput";
-import { PencilIcon, TrashIcon } from "../../../src/components/ui/icons";
+import {
+  GridIcon,
+  ListIcon,
+  PencilIcon,
+  TrashIcon,
+} from "../../../src/components/ui/icons";
 import { toast } from "../../../src/components/ui/Toast";
 import { formatCents } from "../../../lib/money";
 import { ImageUploader, isSaved, type UploaderItem } from "./components/ImageUploader";
+
+// three + o loader de .glb passam de 600 KB: só baixa quando abre um produto com caneca.
+const MugStage = lazy(() =>
+  import("../../../src/components/mug/MugStage").then((m) => ({ default: m.MugStage })),
+);
 
 type Draft = {
   id?: number;
@@ -15,7 +26,13 @@ type Draft = {
   cat: string;
   active: boolean;
   images: UploaderItem[];
+  /** Caneca 3D já salva, só para prévia — quem edita medidas é a tela de mockups. */
+  mockup: MugSettings | null;
 };
+
+/** Como a lista é exibida. Fica no localStorage porque é preferência de quem
+    usa o admin, não estado da navegação. */
+type View = "table" | "card";
 
 /** Coluna ordenada no momento, ou null quando a ordenação está desativada. */
 type Sort = { col: string; dir: "asc" | "desc" } | null;
@@ -38,7 +55,22 @@ const EMPTY: Draft = {
   cat: "",
   active: true,
   images: [],
+  mockup: null,
 };
+
+/** O backend guarda o path da arte separado das medidas; o MugStage quer a URL. */
+const toMugSettings = (p: AdminProduct): MugSettings | null =>
+  p.mockup ? { ...p.mockup, artUrl: p.mockup_art_url } : null;
+
+const toDraft = (p: AdminProduct): Draft => ({
+  id: p.id,
+  name: p.name,
+  priceCents: p.price_cents,
+  cat: p.cat,
+  active: p.active,
+  images: p.images.map((image) => ({ image })),
+  mockup: toMugSettings(p),
+});
 
 export default function AdminProducts() {
   const can = useAuth((s) => s.hasPermission);
@@ -47,6 +79,18 @@ export default function AdminProducts() {
   const [cat, setCat] = useState("");
   const [sort, setSort] = useState<Sort>(null);
   const [page, setPage] = useState(1);
+  const [view, setView] = useState<View>("table");
+
+  // SSG: localStorage só existe no cliente, então a preferência entra depois da
+  // hidratação (mesmo motivo do skipHydration no carrinho).
+  useEffect(() => {
+    if (localStorage.getItem("dibie-admin-produtos-view") === "card") setView("card");
+  }, []);
+
+  function changeView(next: View) {
+    setView(next);
+    localStorage.setItem("dibie-admin-produtos-view", next);
+  }
 
   // o backend só é consultado quando a digitação para
   useEffect(() => {
@@ -75,7 +119,11 @@ export default function AdminProducts() {
     per_page: PER_PAGE,
   });
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [mugError, setMugError] = useState<string | null>(null);
   const busy = create.isPending || update.isPending;
+
+  // erro do 3D é do produto aberto, não do modal: some ao trocar de produto
+  useEffect(() => setMugError(null), [draft?.id]);
 
   const start = (page - 1) * PER_PAGE;
 
@@ -118,6 +166,34 @@ export default function AdminProducts() {
     await removeProduct.mutateAsync(id);
   }
 
+  /** Editar/remover: os mesmos botões na tabela e no card. */
+  const Actions = ({ p }: { p: AdminProduct }) => (
+    <>
+      {can("products.update") && (
+        <button
+          type="button"
+          aria-label="Editar produto"
+          title="Editar"
+          onClick={() => setDraft(toDraft(p))}
+          className="mr-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full hover:bg-ink-10"
+        >
+          <PencilIcon />
+        </button>
+      )}
+      {can("products.delete") && (
+        <button
+          type="button"
+          aria-label="Remover produto"
+          title="Remover"
+          onClick={() => remove(p.id)}
+          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-wine hover:bg-ink-10"
+        >
+          <TrashIcon />
+        </button>
+      )}
+    </>
+  );
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -157,8 +233,75 @@ export default function AdminProducts() {
             </option>
           ))}
         </select>
+
+        <div
+          role="group"
+          aria-label="Visualização"
+          className="ml-auto flex items-center gap-1"
+        >
+          {([
+            ["table", "Tabela", ListIcon],
+            ["card", "Cards", GridIcon],
+          ] as const).map(([mode, label, Icon]) => (
+            <button
+              key={mode}
+              type="button"
+              aria-label={label}
+              title={label}
+              aria-pressed={view === mode}
+              onClick={() => changeView(mode)}
+              className={`inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md ${
+                view === mode ? "bg-ink-10 text-ink" : "text-ink-40 hover:bg-ink-5"
+              }`}
+            >
+              <Icon />
+            </button>
+          ))}
+        </div>
       </div>
 
+      {view === "card" ? (
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+          {rows.map((p) => (
+            <li
+              key={p.id}
+              className="flex flex-col overflow-hidden rounded-2xl border border-ink-10"
+            >
+              {p.image_url ? (
+                <img
+                  src={p.image_url}
+                  alt=""
+                  className="aspect-[4/3] w-full object-cover"
+                />
+              ) : (
+                <div className="flex aspect-[4/3] w-full items-center justify-center bg-ink-5 text-body text-ink-40">
+                  sem imagem
+                </div>
+              )}
+              <div className="flex flex-1 flex-col gap-1 p-3 text-body">
+                <span className="font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
+                  {p.cat}
+                </span>
+                <span className="truncate font-semibold">{p.name}</span>
+                <span className="text-ink-40">{formatCents(p.price_cents)}</span>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-ink-40">
+                    {p.active ? p.slug : `${p.slug} — inativo`}
+                  </span>
+                  <span className="flex-shrink-0">
+                    <Actions p={p} />
+                  </span>
+                </div>
+              </div>
+            </li>
+          ))}
+          {!rows.length && (
+            <li className="col-span-full py-6 text-center text-body text-ink-40">
+              Nenhum produto encontrado
+            </li>
+          )}
+        </ul>
+      ) : (
       <table className="w-full border-collapse text-body">
         <thead>
           <tr className="border-b border-ink-10 text-left text-ink-40">
@@ -215,37 +358,7 @@ export default function AdminProducts() {
               <td>{p.cat}</td>
               <td>{p.active ? "sim" : "não"}</td>
               <td className="text-right">
-                {can("products.update") && (
-                  <button
-                    type="button"
-                    aria-label="Editar produto"
-                    title="Editar"
-                    onClick={() =>
-                      setDraft({
-                        id: p.id,
-                        name: p.name,
-                        priceCents: p.price_cents,
-                        cat: p.cat,
-                        active: p.active,
-                        images: p.images.map((image) => ({ image })),
-                      })
-                    }
-                    className="mr-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full hover:bg-ink-10"
-                  >
-                    <PencilIcon />
-                  </button>
-                )}
-                {can("products.delete") && (
-                  <button
-                    type="button"
-                    aria-label="Remover produto"
-                    title="Remover"
-                    onClick={() => remove(p.id)}
-                    className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-wine hover:bg-ink-10"
-                  >
-                    <TrashIcon />
-                  </button>
-                )}
+                <Actions p={p} />
               </td>
             </tr>
           ))}
@@ -258,6 +371,7 @@ export default function AdminProducts() {
           )}
         </tbody>
       </table>
+      )}
 
       <div className="mt-4 flex items-center justify-between text-body text-ink-40">
         <span>
@@ -288,7 +402,7 @@ export default function AdminProducts() {
 
       {draft && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
-          <div className="w-[min(420px,100%)] rounded-2xl bg-bg p-6">
+          <div className="max-h-[90vh] w-[min(460px,100%)] overflow-y-auto rounded-2xl bg-bg p-6">
             <p className="mb-4 text-h6">
               {draft.id ? "Editar produto" : "Novo produto"}
             </p>
@@ -310,6 +424,31 @@ export default function AdminProducts() {
                 className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-2 outline-none"
               />
             </label>
+            {draft.mockup && (
+              <div className="mb-3">
+                <p className="mb-2 text-body text-ink-40">
+                  Caneca 3D — arraste para girar. As medidas se editam em Mockups.
+                </p>
+                <div className="aspect-[3/2] w-full overflow-hidden rounded-lg border border-ink-10">
+                  {mugError ? (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-body text-ink-40">
+                      {mugError}
+                    </div>
+                  ) : (
+                    <Suspense
+                      fallback={
+                        <div className="flex h-full items-center justify-center text-body text-ink-40">
+                          carregando 3D…
+                        </div>
+                      }
+                    >
+                      {/* sem ref: aqui ninguém fotografa, só confere o resultado */}
+                      <MugStage settings={draft.mockup} onError={setMugError} />
+                    </Suspense>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="mb-3">
               <ImageUploader
                 items={draft.images}

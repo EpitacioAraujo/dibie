@@ -51,36 +51,42 @@ export function ImageUploader({
       <p className="mb-2 text-body text-ink-40">
         Imagens (até {MAX_IMAGES}) — arraste para ordenar, a 1ª é a capa
       </p>
-      <div className="flex flex-wrap gap-3">
-        <label
-          title={full ? `máximo de ${MAX_IMAGES} imagens` : "adicionar imagens"}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
-          }}
-          className={`flex h-20 w-20 flex-col items-center justify-center rounded-md border border-dashed border-ink-10 text-ink-40 ${
-            full ? "opacity-40" : "cursor-pointer hover:bg-ink-5"
-          }`}
-        >
-          <PlusIcon />
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            disabled={full}
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files?.length) addFiles(e.target.files);
-              e.target.value = "";
+      <ul className="flex flex-col gap-1">
+        {/* Adicionar é o primeiro item da lista: o alvo de soltar arquivo fica
+            no topo, onde o olho começa a ler. */}
+        <li>
+          <label
+            title={full ? `máximo de ${MAX_IMAGES} imagens` : "adicionar imagens"}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
             }}
-          />
-        </label>
+            className={`flex items-center gap-3 rounded-md border border-dashed border-ink-10 px-2 py-2 text-body text-ink-40 ${
+              full ? "opacity-40" : "cursor-pointer hover:bg-ink-5"
+            }`}
+          >
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center">
+              <PlusIcon />
+            </span>
+            {full ? `máximo de ${MAX_IMAGES} imagens` : "adicionar imagens"}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={full}
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </li>
 
         {items.map((item, i) => (
-          <button
+          <li
             key={isSaved(item) ? `img-${item.image.id}` : `file-${item.file.name}-${i}`}
-            type="button"
             draggable
             onDragStart={() => (dragging.current = i)}
             onDragOver={(e) => e.preventDefault()}
@@ -89,16 +95,33 @@ export function ImageUploader({
               if (dragging.current !== null) onReorder(dragging.current, i);
               dragging.current = null;
             }}
-            onClick={() => (isSaved(item) ? setConfirming(i) : onRemove(i))}
-            className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-md"
+            className="flex cursor-grab items-center gap-3 rounded-md px-2 py-2 hover:bg-ink-5"
           >
-            <img src={previews[i]} alt="" className="h-full w-full object-cover" />
-            <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
-              <TrashIcon />
+            <img
+              src={previews[i]}
+              alt=""
+              className="h-12 w-12 flex-shrink-0 rounded object-cover"
+            />
+            <span className="flex-1 truncate text-body">
+              {isSaved(item) ? `imagem ${i + 1}` : item.file.name}
             </span>
-          </button>
+            {i === 0 && (
+              <span className="font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
+                capa
+              </span>
+            )}
+            <button
+              type="button"
+              aria-label="Remover imagem"
+              title="Remover"
+              onClick={() => (isSaved(item) ? setConfirming(i) : onRemove(i))}
+              className="inline-flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-wine hover:bg-ink-10"
+            >
+              <TrashIcon />
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
 
       {confirming !== null && (
         <>

@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../src/clients/laravel/config/client";
+import type { MugSettings } from "../src/components/mug/MugStage";
 
 export type AdminProductImage = { id: number; image_url: string };
+
+/** Caneca 3D salva pela tela de mockups. O backend guarda o path da arte
+    separado das medidas; o MugStage quer a URL — daí os dois campos. */
+export type AdminMockup = Omit<MugSettings, "artUrl"> | null;
 
 export type AdminProduct = {
   id: number;
@@ -14,6 +19,8 @@ export type AdminProduct = {
   active: boolean;
   featured: boolean;
   position: number;
+  mockup: AdminMockup;
+  mockup_art_url: string | null;
 };
 
 const KEY = ["admin-products"];

@@ -5,6 +5,8 @@ import {
   Check,
   Download,
   Eye,
+  LayoutGrid,
+  List,
   LogOut,
   Menu,
   Minus,
@@ -50,6 +52,8 @@ export const MoveVerticalIcon = styled(MoveVertical);
 export const EyeIcon = styled(Eye);
 export const RetryIcon = styled(RotateCcw);
 export const MenuIcon = styled(Menu);
+export const GridIcon = styled(LayoutGrid);
+export const ListIcon = styled(List);
 export const CartIcon = styled(ShoppingBag);
 
 // As duas marcas ficam à mão: o lucide não distribui logotipos.
