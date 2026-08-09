@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['slug', 'name', 'price', 'cat', 'active', 'featured', 'position', 'mockup'];
+    protected $fillable = ['slug', 'name', 'price_cents', 'cat', 'active', 'featured', 'position', 'mockup'];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        // Centavos inteiros: o cast decimal:2 entregava string ao front e cada
+        // consumidor convertia por conta própria — era metade do bug de preço.
+        'price_cents' => 'integer',
         'active' => 'boolean',
         'featured' => 'boolean',
         'mockup' => 'array',

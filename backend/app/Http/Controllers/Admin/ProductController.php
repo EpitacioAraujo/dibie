@@ -14,7 +14,7 @@ class ProductController extends Controller
     private const MAX_IMAGES = 4;
 
     /** Colunas que o admin pode ordenar. Fora dessa lista o sort é ignorado. */
-    private const SORTABLE = ['id', 'name', 'price', 'cat', 'active'];
+    private const SORTABLE = ['id', 'name', 'price_cents', 'cat', 'active'];
 
     /**
      * Busca, filtro, ordenação e paginação acontecem aqui. Sem per_page a lista
@@ -125,7 +125,9 @@ class ProductController extends Controller
             // Ausente: o backend gera o código (Product::generateSlug).
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('products')->ignore($ignoreId)],
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0'],
+            // integer, não numeric: um "45.90" enviado por engano falha aqui em
+            // vez de virar 45 centavos silenciosamente.
+            'price_cents' => ['required', 'integer', 'min:0'],
             'cat' => ['required', 'string', 'max:255'],
             'active' => ['boolean'],
             'featured' => ['boolean'],

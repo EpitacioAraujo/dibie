@@ -27,7 +27,7 @@ class AdminProductListTest extends TestCase
         return Product::create(array_merge([
             'slug' => Product::generateSlug(),
             'name' => 'Caneca',
-            'price' => 10,
+            'price_cents' => 1000,
             'cat' => 'canecas',
             'active' => true,
         ], $extra));
@@ -35,9 +35,9 @@ class AdminProductListTest extends TestCase
 
     public function test_busca_filtra_ordena_e_pagina(): void
     {
-        $this->product(['name' => 'Caneca Zebra', 'cat' => 'canecas', 'price' => 30]);
-        $this->product(['name' => 'Caneca Alfa', 'cat' => 'canecas', 'price' => 20]);
-        $this->product(['name' => 'Camiseta Alfa', 'cat' => 'camisetas', 'price' => 10]);
+        $this->product(['name' => 'Caneca Zebra', 'cat' => 'canecas', 'price_cents' => 3000]);
+        $this->product(['name' => 'Caneca Alfa', 'cat' => 'canecas', 'price_cents' => 2000]);
+        $this->product(['name' => 'Camiseta Alfa', 'cat' => 'camisetas', 'price_cents' => 1000]);
 
         // busca por trecho do nome, ignorando caixa
         $data = $this->getJson('/api/admin/products?q=ZEBRA&per_page=10')->assertOk()->json('data');

@@ -27,7 +27,7 @@ class ProductSlugTest extends TestCase
     {
         return $this->postJson('/api/admin/products', array_merge([
             'name' => 'Caneca teste',
-            'price' => '49.90',
+            'price_cents' => 4990,
             'cat' => 'canecas',
             'active' => 1,
         ], $extra))->assertCreated()->json('slug');
@@ -56,7 +56,7 @@ class ProductSlugTest extends TestCase
         $product = Product::first();
         $this->putJson("/api/admin/products/{$product->id}", [
             'name' => 'Outro nome',
-            'price' => '10.00',
+            'price_cents' => 1000,
             'cat' => 'canecas',
             'active' => 1,
         ])->assertOk();

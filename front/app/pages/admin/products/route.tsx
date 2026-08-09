@@ -5,12 +5,13 @@ import { move } from "../../../lib/move";
 import { CurrencyInput } from "../../../src/components/ui/CurrencyInput";
 import { PencilIcon, TrashIcon } from "../../../src/components/ui/icons";
 import { toast } from "../../../src/components/ui/Toast";
+import { formatCents } from "../../../lib/money";
 import { ImageUploader, isSaved, type UploaderItem } from "./components/ImageUploader";
 
 type Draft = {
   id?: number;
   name: string;
-  price: string;
+  priceCents: number;
   cat: string;
   active: boolean;
   images: UploaderItem[];
@@ -26,14 +27,14 @@ const COLUMNS: [label: string, col: string | null][] = [
   ["Imagem", null],
   ["Nome", "name"],
   ["Slug", null],
-  ["Preço", "price"],
+  ["Preço", "price_cents"],
   ["Categoria", "cat"],
   ["Ativo", "active"],
 ];
 
 const EMPTY: Draft = {
   name: "",
-  price: "",
+  priceCents: 0,
   cat: "",
   active: true,
   images: [],
@@ -96,7 +97,7 @@ export default function AdminProducts() {
     // o existente na edição.
     const fd = new FormData();
     fd.append("name", draft.name);
-    fd.append("price", draft.price);
+    fd.append("price_cents", String(draft.priceCents));
     fd.append("cat", draft.cat);
     fd.append("active", draft.active ? "1" : "0");
     // order[] carrega a ordem final: id da imagem salva ou new:<índice de images[]>.
@@ -210,7 +211,7 @@ export default function AdminProducts() {
               </td>
               <td>{p.name}</td>
               <td className="text-ink-40">{p.slug}</td>
-              <td>R$ {p.price}</td>
+              <td>{formatCents(p.price_cents)}</td>
               <td>{p.cat}</td>
               <td>{p.active ? "sim" : "não"}</td>
               <td className="text-right">
@@ -223,7 +224,7 @@ export default function AdminProducts() {
                       setDraft({
                         id: p.id,
                         name: p.name,
-                        price: String(p.price),
+                        priceCents: p.price_cents,
                         cat: p.cat,
                         active: p.active,
                         images: p.images.map((image) => ({ image })),
@@ -304,8 +305,8 @@ export default function AdminProducts() {
             <label className="mb-3 block text-body">
               preço
               <CurrencyInput
-                value={draft.price}
-                onChange={(v) => setDraft({ ...draft, price: v })}
+                value={draft.priceCents}
+                onChange={(v) => setDraft({ ...draft, priceCents: v })}
                 className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-2 outline-none"
               />
             </label>

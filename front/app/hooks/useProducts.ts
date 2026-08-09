@@ -6,7 +6,7 @@ import type { Product } from "../src/types/product";
 type ApiProduct = {
   slug: string;
   name: string;
-  price: number | string;
+  price_cents: number;
   cat: string;
   image_url: string;
   images: { image_url: string }[];
@@ -26,7 +26,7 @@ type Page = {
 const toProduct = (r: ApiProduct): Product => ({
   slug: r.slug,
   name: r.name,
-  price: Number(r.price),
+  price_cents: r.price_cents,
   cat: r.cat,
   img: r.image_url,
   images: r.images.map((i) => i.image_url),

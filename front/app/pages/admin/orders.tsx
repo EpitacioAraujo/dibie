@@ -1,5 +1,6 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useAdminOrders } from "../../hooks/useAdminOrders";
+import { formatCents } from "../../lib/money";
 
 const STATUSES = ["novo", "em produção", "enviado", "concluído", "cancelado"];
 
@@ -35,7 +36,7 @@ export default function AdminOrders() {
                   </div>
                 ))}
               </td>
-              <td>R$ {o.total}</td>
+              <td>{formatCents(o.total_cents)}</td>
               <td>
                 {can("orders.update") ? (
                   <select

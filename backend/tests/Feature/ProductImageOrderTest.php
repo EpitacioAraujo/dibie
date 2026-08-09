@@ -30,7 +30,7 @@ class ProductImageOrderTest extends TestCase
         return array_merge([
             'slug' => 'caneca-teste',
             'name' => 'Caneca teste',
-            'price' => '49.90',
+            'price_cents' => 4990,
             'cat' => 'canecas',
             'active' => 1,
         ], $extra);

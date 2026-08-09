@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../src/clients/laravel/config/client";
 
-export type OrderItem = { id: number; name: string; price: string; qty: number };
+export type OrderItem = { id: number; name: string; price_cents: number; qty: number };
 export type Order = {
   id: number;
   code: string;
-  total: string;
+  total_cents: number;
   status: string;
   contact: string | null;
   created_at: string;

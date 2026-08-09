@@ -1,6 +1,6 @@
 import { useUI } from "../../stores/ui";
 import { useCart, cartTotal, type CartItem } from "../../stores/cart";
-import { formatBRL } from "../types/product";
+import { formatCents } from "../../lib/money";
 import { WHATSAPP } from "../../lib/config";
 import { useCreateOrder } from "../../hooks/useOrders";
 import { Overlay } from "./ui/Overlay";
@@ -8,8 +8,7 @@ import { QtyStepper } from "./ui/QtyStepper";
 import { CloseIcon } from "./ui/icons";
 
 async function checkout(items: CartItem[], createOrder: (p: {
-  total: number;
-  items: { slug: string; name: string; price: number; qty: number }[];
+  items: { slug: string; qty: number }[];
 }) => Promise<string>) {
   if (!items.length) return;
   const total = cartTotal(items);
@@ -19,26 +18,20 @@ async function checkout(items: CartItem[], createOrder: (p: {
   let code: string;
   try {
     code = await createOrder({
-      total,
-      items: items.map((i) => ({
-        slug: i.slug,
-        name: i.name,
-        price: i.price,
-        qty: i.qty,
-      })),
+      items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
     });
   } catch {
     code = "DB-" + Math.random().toString(36).slice(2, 7).toUpperCase();
   }
 
   const lines = items.map(
-    (i) => `${i.qty}x ${i.name} — ${formatBRL(i.price * i.qty)}`
+    (i) => `${i.qty}x ${i.name} — ${formatCents(i.priceCents * i.qty)}`
   );
   const msg =
     "Oi, dibiê! Quero fechar um pedido 🧡\n" +
     `Código do carrinho: ${code}\n\n` +
     lines.join("\n") +
-    `\n\nTotal: ${formatBRL(total)}`;
+    `\n\nTotal: ${formatCents(total)}`;
   window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`);
 }
 
@@ -83,7 +76,7 @@ export function CartDrawer() {
                 />
                 <div className="flex flex-1 flex-col gap-0.5 text-body">
                   <span>{i.name}</span>
-                  <span className="text-ink-40">{formatBRL(i.price)}</span>
+                  <span className="text-ink-40">{formatCents(i.priceCents)}</span>
                 </div>
                 <QtyStepper
                   value={i.qty}
@@ -98,7 +91,7 @@ export function CartDrawer() {
         <div className="mt-4 flex flex-col gap-4 border-t border-ink-10 pt-4">
           <div className="flex justify-between text-body">
             <span>Total</span>
-            <span>{formatBRL(cartTotal(items))}</span>
+            <span>{formatCents(cartTotal(items))}</span>
           </div>
           <button
             type="button"

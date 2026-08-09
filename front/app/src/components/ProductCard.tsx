@@ -1,5 +1,6 @@
 import { useUI } from "../../stores/ui";
-import { formatBRL, type Product } from "../types/product";
+import type { Product } from "../types/product";
+import { formatCents } from "../../lib/money";
 
 export function ProductCard({ product }: { product: Product }) {
   const openProduct = useUI((s) => s.openProduct);
@@ -17,7 +18,7 @@ export function ProductCard({ product }: { product: Product }) {
       {/* preço colado no nome: alinhado à direita ele parecia ser do card seguinte */}
       <div className="mt-3 flex gap-3 text-body">
         <span className="font-semibold">{product.name}</span>
-        <span className="text-ink-40">{formatBRL(product.price)}</span>
+        <span className="text-ink-40">{formatCents(product.price_cents)}</span>
       </div>
       <p className="mt-1 font-mono text-[0.5625rem] uppercase tracking-[0.06em] text-ink-40">
         {product.cat}

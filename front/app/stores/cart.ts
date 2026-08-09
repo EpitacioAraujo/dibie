@@ -5,7 +5,7 @@ import type { Product } from "../src/types/product";
 export type CartItem = {
   slug: string;
   name: string;
-  price: number;
+  priceCents: number;
   img: string;
   qty: number;
 };
@@ -35,7 +35,7 @@ export const useCart = create<CartState>()(
           return {
             items: [
               ...s.items,
-              { slug: p.slug, name: p.name, price: p.price, img: p.img, qty },
+              { slug: p.slug, name: p.name, priceCents: p.price_cents, img: p.img, qty },
             ],
           };
         }),
@@ -58,11 +58,24 @@ export const useCart = create<CartState>()(
       // SSG: sem localStorage no build. Reidratamos no cliente (Header effect)
       // para evitar mismatch de hidratação.
       skipHydration: true,
+      // v0 guardava `price` em reais. Sem esta conversão quem já tinha carrinho
+      // aberto voltaria com priceCents undefined e veria "R$ NaN".
+      version: 1,
+      migrate: (state, from) =>
+        from === 0
+          ? {
+              ...(state as CartState),
+              items: ((state as { items: (CartItem & { price: number })[] }).items ?? []).map(
+                ({ price, ...i }) => ({ ...i, priceCents: Math.round(price * 100) })
+              ),
+            }
+          : (state as CartState),
     }
   )
 );
 
 export const cartCount = (items: CartItem[]) =>
   items.reduce((s, i) => s + i.qty, 0);
+/** Soma de inteiros: exata por construção, sem erro de ponto flutuante. */
 export const cartTotal = (items: CartItem[]) =>
-  items.reduce((s, i) => s + i.price * i.qty, 0);
+  items.reduce((s, i) => s + i.priceCents * i.qty, 0);

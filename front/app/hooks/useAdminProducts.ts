@@ -7,7 +7,7 @@ export type AdminProduct = {
   id: number;
   slug: string;
   name: string;
-  price: string | number;
+  price_cents: number;
   cat: string;
   image_url: string | null;
   images: AdminProductImage[];

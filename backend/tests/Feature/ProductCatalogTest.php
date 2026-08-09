@@ -15,7 +15,7 @@ class ProductCatalogTest extends TestCase
         return Product::create(array_merge([
             'slug' => Product::generateSlug(),
             'name' => 'Caneca',
-            'price' => 10,
+            'price_cents' => 1000,
             'cat' => 'canecas',
             'active' => true,
         ], $extra));

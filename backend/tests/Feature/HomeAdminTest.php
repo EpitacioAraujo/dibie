@@ -67,9 +67,9 @@ class HomeAdminTest extends TestCase
     {
         $this->actingAsAdmin();
 
-        $a = Product::create(['slug' => 'a', 'name' => 'A', 'price' => 10, 'cat' => 'c', 'active' => true]);
-        $b = Product::create(['slug' => 'b', 'name' => 'B', 'price' => 10, 'cat' => 'c', 'active' => true]);
-        $c = Product::create(['slug' => 'c', 'name' => 'C', 'price' => 10, 'cat' => 'c', 'active' => true]);
+        $a = Product::create(['slug' => 'a', 'name' => 'A', 'price_cents' => 1000, 'cat' => 'c', 'active' => true]);
+        $b = Product::create(['slug' => 'b', 'name' => 'B', 'price_cents' => 1000, 'cat' => 'c', 'active' => true]);
+        $c = Product::create(['slug' => 'c', 'name' => 'C', 'price_cents' => 1000, 'cat' => 'c', 'active' => true]);
 
         // c e b em destaque (nessa ordem); a nem entra no payload.
         $this->patchJson('/api/admin/products-featured', ['items' => [

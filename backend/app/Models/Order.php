@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    protected $fillable = ['code', 'total', 'status', 'contact'];
+    protected $fillable = ['code', 'total_cents', 'status', 'contact'];
 
     protected $casts = [
-        'total' => 'decimal:2',
+        'total_cents' => 'integer',
     ];
 
     public function items(): HasMany

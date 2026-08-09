@@ -18,6 +18,12 @@ class OrderController extends Controller
             'items.*.slug' => ['required', 'string'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'contact' => ['nullable', 'string', 'max:255'],
+            // Preço e total vêm do banco. Recusar em vez de ignorar em silêncio:
+            // se um cliente mandar valor, é bug dele ou tentativa de fraude.
+            'total' => ['prohibited'],
+            'total_cents' => ['prohibited'],
+            'items.*.price' => ['prohibited'],
+            'items.*.price_cents' => ['prohibited'],
         ]);
 
         $prices = Product::whereIn('slug', collect($data['items'])->pluck('slug'))
@@ -31,12 +37,11 @@ class OrderController extends Controller
             if (! $product) {
                 continue; // slug inexistente/ inativo é ignorado
             }
-            $line = (float) $product->price * $item['qty'];
-            $total += $line;
+            $total += $product->price_cents * $item['qty']; // int * int: exato
             $rows[] = [
                 'product_slug' => $product->slug,
                 'name' => $product->name,
-                'price' => $product->price,
+                'price_cents' => $product->price_cents,
                 'qty' => $item['qty'],
             ];
         }
@@ -45,7 +50,7 @@ class OrderController extends Controller
 
         $order = Order::create([
             'code' => 'DB-'.Str::upper(Str::random(5)),
-            'total' => $total,
+            'total_cents' => $total,
             'status' => 'novo',
             'contact' => $data['contact'] ?? null,
         ]);

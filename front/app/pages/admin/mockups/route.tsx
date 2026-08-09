@@ -57,7 +57,7 @@ const buildPrompt = (scene: string) =>
 
 const MAX_IMAGES = 4; // mesmo teto do ProductController
 
-const EMPTY_FORM = { name: "", price: "", cat: "", active: true };
+const EMPTY_FORM = { name: "", priceCents: 0, cat: "", active: true };
 
 async function toFile(dataUrl: string, i: number) {
   const blob = await (await fetch(dataUrl)).blob();
@@ -215,7 +215,7 @@ export default function AdminMockups() {
         // O update valida esses campos como obrigatórios — reenvia sem alterar.
         // O slug fica de fora: sem ele o backend mantém o código atual.
         fd.append("name", target.name);
-        fd.append("price", String(target.price));
+        fd.append("price_cents", String(target.price_cents));
         fd.append("cat", target.cat);
         fd.append("active", target.active ? "1" : "0");
         await update.mutateAsync({ id: target.id, body: fd });
@@ -225,7 +225,7 @@ export default function AdminMockups() {
 
       // Sem slug: o código de 8 caracteres vem do backend.
       fd.append("name", form.name);
-      fd.append("price", form.price);
+      fd.append("price_cents", String(form.priceCents));
       fd.append("cat", form.cat);
       fd.append("active", form.active ? "1" : "0");
       // Sem guardar o id: todo clique é sempre um POST novo, e o formulário fica
@@ -521,8 +521,8 @@ export default function AdminMockups() {
                 <label className="block text-body text-ink-40">
                   preço
                   <CurrencyInput
-                    value={form.price}
-                    onChange={(v) => setForm({ ...form, price: v })}
+                    value={form.priceCents}
+                    onChange={(v) => setForm({ ...form, priceCents: v })}
                     className="mt-1 w-full rounded-md border border-ink-10 bg-bg px-3 py-1.5 text-ink outline-none"
                   />
                 </label>

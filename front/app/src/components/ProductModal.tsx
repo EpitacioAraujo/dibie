@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useUI } from "../../stores/ui";
 import { useCart } from "../../stores/cart";
-import { formatBRL } from "../types/product";
+import { formatCents } from "../../lib/money";
 import { Overlay } from "./ui/Overlay";
 import { QtyStepper } from "./ui/QtyStepper";
 import { CloseIcon } from "./ui/icons";
@@ -115,7 +115,7 @@ export function ProductModal() {
             </p>
             <div className="mt-1 flex justify-between text-body">
               <span className="font-semibold">{product.name}</span>
-              <span className="text-ink-40">{formatBRL(product.price)}</span>
+              <span className="text-ink-40">{formatCents(product.price_cents)}</span>
             </div>
             <div className="mt-5 flex items-center gap-3">
               <QtyStepper

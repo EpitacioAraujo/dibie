@@ -36,7 +36,7 @@ const SHOTS = [
   { rotateX: 340, rotateY: 290 },
 ];
 
-const PRICE = "40.00";
+const PRICE = 4000; // centavos
 
 const MAX_SHOTS = 4; // mesmo teto de imagens por produto do ProductController
 
@@ -249,7 +249,7 @@ export default function AdminCarga() {
       fd.append("art", loaded.art);
       fd.append("mockup", JSON.stringify(scene));
       fd.append("name", row.name);
-      fd.append("price", price);
+      fd.append("price_cents", String(price));
       fd.append("cat", cat.trim() || row.cat);
       fd.append("active", "1");
 
